@@ -23,6 +23,8 @@ except:
     PLOTLY = False
 from tqdm.auto import tqdm
 import seaborn as sns    
+from statsmodels.tsa.stattools import grangercausalitytests
+
 # Function: process_fitbit_sleep_data()
 # fileList: A list of fitbit sleep data files eg ["sleep-2020-03-09.json","sleep-2020-04-08.json".....]
 # Returns a dataframe with the following columns:
@@ -30,25 +32,10 @@ import seaborn as sns
 
 
 
-
-class tqdm:
-    def __init__(self, iterable, title=None):
-        if title:
-            st.write(title)
-        self.prog_bar = st.progress(0)
-        self.iterable = iterable
-        self.length = len(iterable)
-        self.i = 0
-
-    def __iter__(self):
-        for obj in self.iterable:
-            yield obj
-            self.i += 1
-            current_prog = self.i / self.length
-            self.prog_bar.progress(current_prog)
+#@st.cache            
 def process_fitbit_sleep_data(fileList):
     full_sleep_df = None
-    for input_file in tqdm(fileList,title='Loading in fitbit data'):
+    for input_file in fileList:#,title='Loading in fitbit data'):
         input_df = pd.read_json(input_file)
         detail_df = json_normalize(input_df['levels'])
         sleep_df = pd.concat([input_df, detail_df], axis =1)
@@ -94,8 +81,7 @@ def plot_fitbit_sleep_data(sleep_df, cols):
         output_filename += "-" + col
     
     output_filename += ".png"
-    #plt.savefig(output_filename, dpi=100)
-    #plt.close()	
+	
     st.pyplot()
 def plot_fitbit_sleep_data_plotly(sleep_df, cols):
 
@@ -144,15 +130,20 @@ def plot_corr(sleep_df):
 
     plt.title('Correlation Matrix', fontsize=14)
     st.pyplot()
-def df_to_plotly(df):
+from sklearn.impute import SimpleImputer
+import copy
+def df_to_plotly(df,log=False):
     return {'z': df.values.tolist(),
             'x': df.columns.tolist(),
             'y': df.index.tolist()}
-def plot_corr_plotly(sleep_df):
- 
-    fig = go.Figure(data=go.Heatmap(df_to_plotly(sleep_df)))
 
+def plot_corr_plotly(sleep_df):
+    fig = go.Figure(data=go.Heatmap(df_to_plotly(sleep_df.corr())))
     st.write(fig)
+def plot_df_plotly(sleep_df):
+    fig = go.Figure(data=go.Heatmap(df_to_plotly(sleep_df,log=True)))
+    st.write(fig)
+
 
 def crosscorr(datax, datay, lag=0, wrap=False):
     """ Lag-N cross correlation. 
@@ -176,9 +167,9 @@ def crosscorr(datax, datay, lag=0, wrap=False):
 def check_time_lags(df,col0,col1):
     d1 = df[col0]
     d2 = df[col1]
-    seconds = 5
-    fps = 30
-    rs = [crosscorr(d1,d2, lag) for lag in range(-int(seconds*fps),int(seconds*fps+1))]
+    hours = 5
+    days = 30
+    rs = [crosscorr(d1,d2, lag) for lag in range(-int(hours*days),int(hours*days+1))]
     offset = np.ceil(len(rs)/2)-np.argmax(rs)
     f,ax=plt.subplots(figsize=(20,13))
     re_title = 'look for time lags when correlation is maximised (peak synchrony) betwen {0} and {1}'.format(col0,col1)
@@ -191,20 +182,55 @@ def check_time_lags(df,col0,col1):
     plt.legend()  
     st.pyplot()
 
+#import statsmodels.api as sm
+#from statsmodels.tsa.api import VAR
+#def analyze_coherance(df,col0,col1):
+#    d1 = df[col0]
+#    d2 = df[col1]
+    #plt.specgram(signalData,Fs=1)
+
+
+    #plt.cohere(d1,d2,NFFT=len(d1)/2)  
+    # import for Granger's Causality Test
+#    granger_test = sm.tsa.stattools.grangercausalitytests(df, maxlag=2, verbose=True)
+#    st.text(granger_test)
+#    df_differenced = df.diff().dropna()
+
+##    model = VAR(df_differenced)
+#    results = model.fit(maxlags=15, ic='aic')
+#    st.text(results.summary())
+    #st.pyplot()
+
+
 
 if __name__ == "__main__":  
-    st.title('Inner Galileo Fitbit analysis for sleep quality')
+    st.title('Analysis for sleep quality')
     fileList = ["sleep-2020-03-09.json","sleep-2020-04-08.json","sleep-2020-05-08.json","sleep-2020-06-07.json","sleep-2020-07-07.json"]
+
     st.markdown('''
     This is a markdown string that explains sleep data from date {0}
     '''.format(str('2020-03-09')))
     sleep_df = process_fitbit_sleep_data(fileList)
-    st.write(sleep_df, unsafe_allow_html=True)
+        #st.write(df1)
+    df = copy.copy(sleep_df)
+ 
+    del df['endTime']
+    del df['dayOfWeek']
+    del df['startTime']
+    del df['type']
+    #imp = SimpleImputer(strategy="most_frequent")
+    imp = SimpleImputer(missing_values=np.nan, strategy='mean')
+    df.values[:] = imp.fit_transform(df.values[:])
+
+    #st.write(sleep_df, unsafe_allow_html=True)
     if PLOTLY:
         plot_fitbit_sleep_data_plotly(sleep_df, ['rem.%', 'deep.%'])
         plot_sleep_data_scatter_plotly(sleep_df, 'startMin', 'deep.%')
         plot_corr_plotly(sleep_df)
         check_time_lags(sleep_df,'rem.%','deep.%')
+        plot_df_plotly(sleep_df)#,'rem.%','deep.%')
+     
+
     else:
         plot_corr(sleep_df)
         plot_fitbit_sleep_data(sleep_df, ['rem.%', 'deep.%'])
@@ -212,3 +238,4 @@ if __name__ == "__main__":
 
 
 
+#NFFT=256, Fs=2, Fc=0, detrend=, window=, noverlap=0, pad_to=None, sides=’default’, scale_by_freq=None, *, data=None, **kwargs)
