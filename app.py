@@ -138,7 +138,34 @@ def df_to_plotly(df,log=False):
             'y': df.index.tolist()}
 
 def plot_corr_plotly(sleep_df):
-    fig = go.Figure(data=go.Heatmap(df_to_plotly(sleep_df.corr())))
+    sns_colorscale = [[0.0, '#3f7f93'], #cmap = sns.diverging_palette(220, 10, as_cmap = True)
+    [0.071, '#5890a1'],
+    [0.143, '#72a1b0'],
+    [0.214, '#8cb3bf'],
+    [0.286, '#a7c5cf'],
+    [0.357, '#c0d6dd'],
+    [0.429, '#dae8ec'],
+    [0.5, '#f2f2f2'],
+    [0.571, '#f7d7d9'],
+    [0.643, '#f2bcc0'],
+    [0.714, '#eda3a9'],
+    [0.786, '#e8888f'],
+    [0.857, '#e36e76'],
+    [0.929, '#de535e'],
+    [1.0, '#d93a46']]
+    heat = go.Heatmap(df_to_plotly(sleep_df.corr()),colorscale=sns_colorscale)
+    #fig = go.Figure(data=
+
+    title = 'Correlation Matrix'               
+
+    layout = go.Layout(title_text=title, title_x=0.5, 
+                    width=600, height=600,
+                    xaxis_showgrid=False,
+                    yaxis_showgrid=False,
+                    yaxis_autorange='reversed')
+    
+    fig=go.Figure(data=[heat], layout=layout)      
+
     st.write(fig)
 def plot_df_plotly(sleep_df):
     fig = go.Figure(data=go.Heatmap(df_to_plotly(sleep_df,log=True)))
@@ -165,10 +192,18 @@ def crosscorr(datax, datay, lag=0, wrap=False):
     else: 
         return datax.corr(datay.shift(lag))
 def check_time_lags(df,col0,col1):
+    sns.set(style='whitegrid', rc={"grid.linewidth": 0.1})
+    sns.set_context("paper", font_scale=3.9)                                                  
+    #plt.figure(figsize=(3.1, 3)) # Two column paper. Each column is about 3.15 inch wide.                                                                                                                                                                                                                                 
+    #color = sns.color_palette("Set2", 6)
+    # https://towardsdatascience.com/granger-causality-and-vector-auto-regressive-model-for-time-series-forecasting-3226a64889a6
     d1 = df[col0]
     d2 = df[col1]
     hours = 5
     days = 30
+    #https://gist.github.com/jcheong0428/7d5759f78145fc0dc979337f82c6ea33
+    #seconds = 5
+    #fps = 30
     rs = [crosscorr(d1,d2, lag) for lag in range(-int(hours*days),int(hours*days+1))]
     offset = np.ceil(len(rs)/2)-np.argmax(rs)
     f,ax=plt.subplots(figsize=(20,13))
@@ -181,6 +216,10 @@ def check_time_lags(df,col0,col1):
     ax.set_xticklabels([-150, -100, -50, 0, 50, 100, 150]);
     plt.legend()  
     st.pyplot()
+    #f,ax=plt.subplots(figsize=(20,13))
+    #plt.xcorr([np.abs(d) for d in d1], [np.abs(d) for d in d2], normed=True, usevlines=True, maxlags=10)
+
+    #st.pyplot()
 
 #import statsmodels.api as sm
 #from statsmodels.tsa.api import VAR
@@ -228,6 +267,13 @@ if __name__ == "__main__":
         plot_sleep_data_scatter_plotly(sleep_df, 'startMin', 'deep.%')
         plot_corr_plotly(sleep_df)
         check_time_lags(sleep_df,'rem.%','deep.%')
+
+        '''
+        If imputation worked there would be no nans visible below:
+        need to drop nans
+        fill with zero,
+        impute zeros with mean
+        '''
         plot_df_plotly(sleep_df)#,'rem.%','deep.%')
      
 
