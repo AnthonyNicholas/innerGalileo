@@ -9,6 +9,6 @@ Dependencies:  Pandas, numpy, matplotlib, streamlit, pydeck, altair
 How to run: 
 ```
   python3 process-sleep-data.py; or
-  streamlit run process-sleep-data.py
+  streamlit run app.py
 ```
 
