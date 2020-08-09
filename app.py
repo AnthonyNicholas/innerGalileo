@@ -21,6 +21,9 @@ try:
     PLOTLY = True
 except:
     PLOTLY = False
+
+import cufflinks as cf
+import seaborn as sns    
 # Function: process_fitbit_sleep_data()
 # fileList: A list of fitbit sleep data files eg ["sleep-2020-03-09.json","sleep-2020-04-08.json".....]
 # Returns a dataframe with the following columns:
@@ -97,7 +100,17 @@ def plot_fitbit_sleep_data(sleep_df, cols):
     #plt.savefig(output_filename, dpi=100)
     #plt.close()	
     st.pyplot()
+def plot_fitbit_sleep_data_plotly(sleep_df, cols):
 
+    X = [i for i in range(0,len(sleep_df.index.values))]
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=X, y=sleep_df['rem.%'],
+                        mode='lines',
+                        name='REM sleep'))
+    fig.add_trace(go.Scatter(x=X, y=sleep_df['deep.%'],
+                        mode='lines+markers',
+                        name='deep sleep'))
+    st.write(fig)
 
 # Function: plot_sleep_data_scatter 
 # sleep_df: a sleep dataframe
@@ -122,23 +135,33 @@ def plot_sleep_data_scatter_plotly(full_sleep_df, col1, col2):
 # sleep_df: pandas DataFrame
 
 def plot_corr(sleep_df):
+
     f = plt.figure(figsize=(19, 15))
-    plt.matshow(sleep_df.corr(), fignum=f.number)
+    #plt.matshow(sleep_df.corr(), fignum=f.number)
+    fig = sns.heatmap(sleep_df.corr())#,annot=True)
+    
     cols = ['duration', 'efficiency', 'summary.deep.minutes', 'summary.deep.minutes.%', 'summary.light.minutes', 'summary.light.minutes.%', 'summary.rem.minutes', 'summary.rem.minutes.%', 'summary.wake.minutes', 'summary.wake.minutes.%', 'startMin', 'avg4_startMin', 'startTimeDeviation1.%', 'startTimeDeviation4.%']
     plt.xticks(range(sleep_df.shape[1]), cols, fontsize=12, rotation="vertical")
     plt.yticks(range(sleep_df.shape[1]), cols, fontsize=12)
-    cb = plt.colorbar()
-    cb.ax.tick_params(labelsize=12)
+    #cb = plt.colorbar()
+    #cb.ax.tick_params(labelsize=12)
     plt.title('Correlation Matrix', fontsize=14)
+
+    #st.write(
     st.pyplot()
+    #st.pyplot()
 
 def plot_corr_plotly(sleep_df):
     '''
     I think this is empty because I have not selected the right columns
     '''
-    cols = ['duration', 'efficiency', 'summary.deep.minutes', 'summary.deep.minutes.%', 'summary.light.minutes', 'summary.light.minutes.%', 'summary.rem.minutes', 'summary.rem.minutes.%', 'summary.wake.minutes', 'summary.wake.minutes.%', 'startMin', 'avg4_startMin', 'startTimeDeviation1.%', 'startTimeDeviation4.%']
-    temp = sleep_df[[c for c in sleep_df.columns][0:10]]
-    fig = px.density_heatmap(temp.corr())
+
+    cf.go_offline()
+    cf.set_config_file(offline=False, world_readable=True)
+    fig = sleep_df.corr().iplot(kind='heatmap',colorscale="Blues",title="Feature Correlation Matrix")
+    #cols = ['duration', 'efficiency', 'summary.deep.minutes', 'summary.deep.minutes.%', 'summary.light.minutes', 'summary.light.minutes.%', 'summary.rem.minutes', 'summary.rem.minutes.%', 'summary.wake.minutes', 'summary.wake.minutes.%', 'startMin', 'avg4_startMin', 'startTimeDeviation1.%', 'startTimeDeviation4.%']
+    #temp = sleep_df[[c for c in sleep_df.columns][0:10]]
+    #fig = px.density_heatmap(temp.corr())
     st.write(fig)
     
 #if __name__ == "__main__":  
@@ -148,20 +171,24 @@ fileList = ["sleep-2020-03-09.json","sleep-2020-04-08.json","sleep-2020-05-08.js
 st.markdown('''
 This is a markdown string that explains sleep data from date {0}
 '''.format(str('2020-03-09')))
+
+
 sleep_df = process_fitbit_sleep_data(fileList)
-
-
-plot_fitbit_sleep_data(sleep_df, ['rem.%', 'deep.%'])
-if PLOTLY:
-    plot_sleep_data_scatter_plotly(sleep_df, 'startMin', 'deep.%')
-else:
-    plot_sleep_data_scatter(sleep_df, 'startMin', 'deep.%')
-if PLOTLY:
-
-    plot_corr_plotly(sleep_df)
-
-else:
-    plot_corr(sleep_df)
 st.write(sleep_df, unsafe_allow_html=True)
+
+plot_fitbit_sleep_data_plotly(sleep_df, ['rem.%', 'deep.%'])
+
+#plot_fitbit_sleep_data(sleep_df, ['rem.%', 'deep.%'])
+#if PLOTLY:
+plot_sleep_data_scatter_plotly(sleep_df, 'startMin', 'deep.%')
+#else:
+#plot_sleep_data_scatter(sleep_df, 'startMin', 'deep.%')
+#if PLOTLY:
+
+#plot_corr_plotly(sleep_df)
+
+#else:
+plot_corr(sleep_df)
+#leep_df = process_fitbit_sleep_data(fileList)
 
 
