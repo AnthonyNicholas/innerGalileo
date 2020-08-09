@@ -17,11 +17,30 @@ except:
 # fileList: A list of fitbit sleep data files eg ["sleep-2020-03-09.json","sleep-2020-04-08.json".....]
 # Returns a dataframe with the following columns:
 # ['duration', 'efficiency', 'endTime', 'mainSleep', 'minutesAfterWakeup', 'minutesAsleep', 'minutesAwake', 'minutesToFallAsleep', 'startTime', 'summary.asleep.count', 'summary.asleep.minutes', 'summary.awake.count', 'summary.awake.minutes', 'summary.deep.count', 'summary.deep.minutes', 'summary.deep.thirtyDayAvgMinutes', 'summary.light.count', 'summary.light.minutes', 'summary.light.thirtyDayAvgMinutes', 'summary.rem.count', 'summary.rem.minutes', 'summary.rem.thirtyDayAvgMinutes', 'summary.restless.count', 'summary.restless.minutes', 'summary.wake.count', 'summary.wake.minutes', 'summary.wake.thirtyDayAvgMinutes', 'timeInBed', 'type', 'dayOfWeek', 'rem.%', 'deep.%', 'wake.%', 'light.%', 'startMin', 'endMin']
+
+
+from tqdm.auto import tqdm
+import streamlit as st
+
+
+class tqdm:
+    def __init__(self, iterable, title=None):
+        if title:
+            st.write(title)
+        self.prog_bar = st.progress(0)
+        self.iterable = iterable
+        self.length = len(iterable)
+        self.i = 0
+
+    def __iter__(self):
+        for obj in self.iterable:
+            yield obj
+            self.i += 1
+            current_prog = self.i / self.length
+            self.prog_bar.progress(current_prog)
 def process_fitbit_sleep_data(fileList):
-
     full_sleep_df = None
-
-    for input_file in fileList:
+    for input_file in tqdm(fileList,title='Loading in fitbit data'):
         input_df = pd.read_json(input_file)
         detail_df = json_normalize(input_df['levels'])
         sleep_df = pd.concat([input_df, detail_df], axis =1)
@@ -67,8 +86,10 @@ def plot_fitbit_sleep_data(sleep_df, cols):
         output_filename += "-" + col
     
     output_filename += ".png"
-    plt.savefig(output_filename, dpi=100)
-    plt.close()	
+    #plt.savefig(output_filename, dpi=100)
+    #plt.close()	
+    st.pyplot()
+
 
 # Function: plot_sleep_data_scatter 
 # sleep_df: a sleep dataframe
@@ -79,61 +100,10 @@ def plot_sleep_data_scatter(full_sleep_df, col1, col2):
     plt.title('Sleep plot')
     plt.ylabel(col2)
     plt.xlabel(col1)
-    output_filename = "sleep-scatter-" + col1 + "-" + col2 + ".png"
-    plt.savefig(output_filename, dpi=100)
-    plt.close()	
-
-'''
-IN PROGRESS
-
-def plot_sleep_data_bar(full_sleep_df, col1, col2):
-    full_sleep_df.plot.bar(x=col1, y=col2)
-    plt.title('Sleep plot')
-    plt.ylabel(col2)
-    plt.xlabel(col1)
-    output_filename = "full-sleep-correlation-plot-" + col1 + "-" + col2 + ".png"
-    plt.savefig(output_filename, dpi=100)
-    plt.close()	
-
-def plot_sleep_data_bar_whole_df(full_sleep_df):
-    full_sleep_df.plot.bar()
-    plt.title('Sleep plot')
-    # plt.ylabel(col2)
-    # plt.xlabel(col1)
-    output_filename = "full-sleep-correlation-plot-startMin.png"
-    plt.savefig(output_filename, dpi=100)
-    plt.close()	
-
-
-    # plot_sleep_data_scatter(full_sleep_df, 'summary.rem.minutes.%', 'startTimeDeviation14.%')
-    # plot_corr(full_sleep_df)
-    plot_sleep_data_line(full_sleep_df, ['summary.rem.minutes', 'summary.deep.minutes', 'avg14_startMin'])
-
-
-    # plot_sleep_data_scatter(full_sleep_df, 'summary.deep.minutes', 'startTimeDeviation7.%')
-    # plot_sleep_data_scatter(full_sleep_df, 'summary.rem.minutes', 'summary.deep.minutes')
-    # plot_sleep_data_bar(full_sleep_df.groupby('dayOfWeek').mean(), 'dayOfWeek', 'summary.rem.minutes')
-    # plot_sleep_data_bar_whole_df(full_sleep_df.groupby('dayOfWeek').mean()['summary.rem.minutes'])
-    # plot_sleep_data_line(full_sleep_df, ['summary.rem.minutes', 'summary.deep.minutes'])
-    # plot_sleep_data_bar_whole_df(full_sleep_df['startMin'])
-    # plot_sleep_data_line(full_sleep_df, ['summary.rem.minutes', 'summary.deep.minutes', 'startTimeDeviation1.%'])
-
-    #full_sleep_df[['summary.rem.minutes.%','summary.deep.minutes.%', 'summary.wake.minutes.%', 'summary.light.minutes.%']].plot(figsize=(20,5))
-    # full_sleep_df[['summary.rem.minutes.%', 'startTimeDeviation7.%']].plot(x=figsize=(20,5))
-    # full_sleep_df.plot.scatter(x='summary.rem.minutes.%', y='startMin')
-    # # full_sleep_df[['summary.rem.minutes.%','summary.deep.minutes.%', 'summary.wake.minutes.%', 'summary.light.minutes.%']].plot(figsize=(20,5))
-    # plt.title('Sleep plot')
-    # plt.ylabel('start-Min')
-    # plt.xlabel('rem')
-    # # for date in full_sleep_df.index[full_sleep_df['dayOfWeek'] == 'Monday'].tolist():
-    # #     plt.axvline(date)
-    # output_filename = "full-sleep-correlation-plot.png"
-    # plt.savefig(output_filename, dpi=100)
-    # plt.close()	
-
-    # sleep_df.to_csv("test-output.csv")
-
-'''
+    st.pyplot()
+    #output_filename = "sleep-scatter-" + col1 + "-" + col2 + ".png"
+    #plt.savefig(output_filename, dpi=100)
+    #plt.close()	
 
 # Function: plot_corr(sleep_df)
 # Function plots a graphical correlation matrix for each pair of columns in the dataframe.
@@ -147,7 +117,9 @@ def plot_corr(sleep_df):
     plt.yticks(range(sleep_df.shape[1]), cols, fontsize=12)
     cb = plt.colorbar()
     cb.ax.tick_params(labelsize=12)
-    plt.title('Correlation Matrix', fontsize=14);
+    plt.title('Correlation Matrix', fontsize=14)
+    st.pyplot()
+
     # corr = sleep_df.corr()
     # size = 10
     # fig, ax = plt.subplots(figsize=(size, size))
@@ -156,25 +128,24 @@ def plot_corr(sleep_df):
     # plt.xticks(range(len(corr.columns)), corr.columns, rotation='vertical')
     # cb = plt.colorbar()
     # cb.ax.tick_params(labelsize=14)
-    output_filename = "full-sleep-correlation-matrix.png"
-    plt.savefig(output_filename, dpi=100)
-    plt.close()	
+    #output_filename = "full-sleep-correlation-matrix.png"
+    #plt.savefig(output_filename, dpi=100)
+    #plt.close()	
 
 #if __name__ == "__main__":  
 st.title('fitbit analysis for sleep')
 
 fileList = ["sleep-2020-03-09.json","sleep-2020-04-08.json","sleep-2020-05-08.json","sleep-2020-06-07.json","sleep-2020-07-07.json"]
-
+st.markdown('''
+This is a markdown string that explains sleep data from date {0}
+'''.format(str('2020-03-09')))
 sleep_df = process_fitbit_sleep_data(fileList)
+
 
 plot_fitbit_sleep_data(sleep_df, ['rem.%', 'deep.%'])
 
 plot_sleep_data_scatter(sleep_df, 'startMin', 'deep.%')
-
-    # full_sleep_df['avg14_startMin'] = full_sleep_df['startMin'].rolling(14).mean()
-    # full_sleep_df['startTimeDeviation1.%'] = full_sleep_df['startMin']/1440
-    # full_sleep_df['startTimeDeviation14.%'] = abs(full_sleep_df['startMin'] - full_sleep_df['avg14_startMin'])/full_sleep_df['startMin']
-    # full_sleep_df['avg4_rem'] = full_sleep_df['summary.rem.minutes'].rolling(4).mean()
-    # full_sleep_df['avg4_deep'] = full_sleep_df['summary.deep.minutes'].rolling(4).mean()
+plot_corr(sleep_df)
+st.write(sleep_df, unsafe_allow_html=True)
 
 
