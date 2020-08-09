@@ -13,6 +13,14 @@ try:
     json_normalize = pd.json_normalize
 except:
     from pandas.io.json import json_normalize
+
+try:
+    import plotly.express as px
+    import plotly.graph_objects as go # or plotly.express as px
+
+    PLOTLY = True
+except:
+    PLOTLY = False
 # Function: process_fitbit_sleep_data()
 # fileList: A list of fitbit sleep data files eg ["sleep-2020-03-09.json","sleep-2020-04-08.json".....]
 # Returns a dataframe with the following columns:
@@ -101,6 +109,10 @@ def plot_sleep_data_scatter(full_sleep_df, col1, col2):
     plt.ylabel(col2)
     plt.xlabel(col1)
     st.pyplot()
+
+def plot_sleep_data_scatter_plotly(full_sleep_df, col1, col2):
+    fig = px.scatter(x=full_sleep_df[col1], y=full_sleep_df[col2])
+    st.write(fig)
     #output_filename = "sleep-scatter-" + col1 + "-" + col2 + ".png"
     #plt.savefig(output_filename, dpi=100)
     #plt.close()	
@@ -120,20 +132,17 @@ def plot_corr(sleep_df):
     plt.title('Correlation Matrix', fontsize=14)
     st.pyplot()
 
-    # corr = sleep_df.corr()
-    # size = 10
-    # fig, ax = plt.subplots(figsize=(size, size))
-    # ax.matshow(corr)
-    # plt.yticks(range(len(corr.columns)), corr.columns);
-    # plt.xticks(range(len(corr.columns)), corr.columns, rotation='vertical')
-    # cb = plt.colorbar()
-    # cb.ax.tick_params(labelsize=14)
-    #output_filename = "full-sleep-correlation-matrix.png"
-    #plt.savefig(output_filename, dpi=100)
-    #plt.close()	
-
+def plot_corr_plotly(sleep_df):
+    '''
+    I think this is empty because I have not selected the right columns
+    '''
+    cols = ['duration', 'efficiency', 'summary.deep.minutes', 'summary.deep.minutes.%', 'summary.light.minutes', 'summary.light.minutes.%', 'summary.rem.minutes', 'summary.rem.minutes.%', 'summary.wake.minutes', 'summary.wake.minutes.%', 'startMin', 'avg4_startMin', 'startTimeDeviation1.%', 'startTimeDeviation4.%']
+    temp = sleep_df[[c for c in sleep_df.columns][0:10]]
+    fig = px.density_heatmap(temp.corr())
+    st.write(fig)
+    
 #if __name__ == "__main__":  
-st.title('fitbit analysis for sleep')
+st.title('Inner Galileo Fitbit analysis for sleep and Major Depressive Disorder')
 
 fileList = ["sleep-2020-03-09.json","sleep-2020-04-08.json","sleep-2020-05-08.json","sleep-2020-06-07.json","sleep-2020-07-07.json"]
 st.markdown('''
@@ -143,9 +152,16 @@ sleep_df = process_fitbit_sleep_data(fileList)
 
 
 plot_fitbit_sleep_data(sleep_df, ['rem.%', 'deep.%'])
+if PLOTLY:
+    plot_sleep_data_scatter_plotly(sleep_df, 'startMin', 'deep.%')
+else:
+    plot_sleep_data_scatter(sleep_df, 'startMin', 'deep.%')
+if PLOTLY:
 
-plot_sleep_data_scatter(sleep_df, 'startMin', 'deep.%')
-plot_corr(sleep_df)
+    plot_corr_plotly(sleep_df)
+
+else:
+    plot_corr(sleep_df)
 st.write(sleep_df, unsafe_allow_html=True)
 
 
