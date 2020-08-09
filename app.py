@@ -150,18 +150,14 @@ def plot_corr(sleep_df):
     #st.write(
     st.pyplot()
     #st.pyplot()
-
+def df_to_plotly(df):
+    return {'z': df.values.tolist(),
+            'x': df.columns.tolist(),
+            'y': df.index.tolist()}
 def plot_corr_plotly(sleep_df):
-    '''
-    I think this is empty because I have not selected the right columns
-    '''
+ 
+    fig = go.Figure(data=go.Heatmap(df_to_plotly(sleep_df)))
 
-    cf.go_offline()
-    cf.set_config_file(offline=False, world_readable=True)
-    fig = sleep_df.corr().iplot(kind='heatmap',colorscale="Blues",title="Feature Correlation Matrix")
-    #cols = ['duration', 'efficiency', 'summary.deep.minutes', 'summary.deep.minutes.%', 'summary.light.minutes', 'summary.light.minutes.%', 'summary.rem.minutes', 'summary.rem.minutes.%', 'summary.wake.minutes', 'summary.wake.minutes.%', 'startMin', 'avg4_startMin', 'startTimeDeviation1.%', 'startTimeDeviation4.%']
-    #temp = sleep_df[[c for c in sleep_df.columns][0:10]]
-    #fig = px.density_heatmap(temp.corr())
     st.write(fig)
     
 #if __name__ == "__main__":  
@@ -185,10 +181,14 @@ plot_sleep_data_scatter_plotly(sleep_df, 'startMin', 'deep.%')
 #plot_sleep_data_scatter(sleep_df, 'startMin', 'deep.%')
 #if PLOTLY:
 
-#plot_corr_plotly(sleep_df)
 
 #else:
 plot_corr(sleep_df)
 #leep_df = process_fitbit_sleep_data(fileList)
+'''
+Next :
+https://stackoverflow.com/questions/33171413/cross-correlation-time-lag-correlation-with-pandas
+'''
+plot_corr_plotly(sleep_df)
 
-
+st.markdown('done')
