@@ -21,8 +21,7 @@ try:
     PLOTLY = True
 except:
     PLOTLY = False
-
-import cufflinks as cf
+from tqdm.auto import tqdm
 import seaborn as sns    
 # Function: process_fitbit_sleep_data()
 # fileList: A list of fitbit sleep data files eg ["sleep-2020-03-09.json","sleep-2020-04-08.json".....]
@@ -30,8 +29,6 @@ import seaborn as sns
 # ['duration', 'efficiency', 'endTime', 'mainSleep', 'minutesAfterWakeup', 'minutesAsleep', 'minutesAwake', 'minutesToFallAsleep', 'startTime', 'summary.asleep.count', 'summary.asleep.minutes', 'summary.awake.count', 'summary.awake.minutes', 'summary.deep.count', 'summary.deep.minutes', 'summary.deep.thirtyDayAvgMinutes', 'summary.light.count', 'summary.light.minutes', 'summary.light.thirtyDayAvgMinutes', 'summary.rem.count', 'summary.rem.minutes', 'summary.rem.thirtyDayAvgMinutes', 'summary.restless.count', 'summary.restless.minutes', 'summary.wake.count', 'summary.wake.minutes', 'summary.wake.thirtyDayAvgMinutes', 'timeInBed', 'type', 'dayOfWeek', 'rem.%', 'deep.%', 'wake.%', 'light.%', 'startMin', 'endMin']
 
 
-from tqdm.auto import tqdm
-import streamlit as st
 
 
 class tqdm:
@@ -124,11 +121,13 @@ def plot_sleep_data_scatter(full_sleep_df, col1, col2):
     st.pyplot()
 
 def plot_sleep_data_scatter_plotly(full_sleep_df, col1, col2):
-    fig = px.scatter(x=full_sleep_df[col1], y=full_sleep_df[col2])
+    fig = px.scatter(x=full_sleep_df[col1], y=full_sleep_df[col2],labels={
+                     "x": col1,
+                     "y": col2                 
+                },
+                title="Sleep plot")
+
     st.write(fig)
-    #output_filename = "sleep-scatter-" + col1 + "-" + col2 + ".png"
-    #plt.savefig(output_filename, dpi=100)
-    #plt.close()	
 
 # Function: plot_corr(sleep_df)
 # Function plots a graphical correlation matrix for each pair of columns in the dataframe.
@@ -137,19 +136,14 @@ def plot_sleep_data_scatter_plotly(full_sleep_df, col1, col2):
 def plot_corr(sleep_df):
 
     f = plt.figure(figsize=(19, 15))
-    #plt.matshow(sleep_df.corr(), fignum=f.number)
-    fig = sns.heatmap(sleep_df.corr())#,annot=True)
+    fig = sns.heatmap(sleep_df.corr())
     
     cols = ['duration', 'efficiency', 'summary.deep.minutes', 'summary.deep.minutes.%', 'summary.light.minutes', 'summary.light.minutes.%', 'summary.rem.minutes', 'summary.rem.minutes.%', 'summary.wake.minutes', 'summary.wake.minutes.%', 'startMin', 'avg4_startMin', 'startTimeDeviation1.%', 'startTimeDeviation4.%']
     plt.xticks(range(sleep_df.shape[1]), cols, fontsize=12, rotation="vertical")
     plt.yticks(range(sleep_df.shape[1]), cols, fontsize=12)
-    #cb = plt.colorbar()
-    #cb.ax.tick_params(labelsize=12)
-    plt.title('Correlation Matrix', fontsize=14)
 
-    #st.write(
+    plt.title('Correlation Matrix', fontsize=14)
     st.pyplot()
-    #st.pyplot()
 def df_to_plotly(df):
     return {'z': df.values.tolist(),
             'x': df.columns.tolist(),
@@ -159,36 +153,62 @@ def plot_corr_plotly(sleep_df):
     fig = go.Figure(data=go.Heatmap(df_to_plotly(sleep_df)))
 
     st.write(fig)
-    
-#if __name__ == "__main__":  
-st.title('Inner Galileo Fitbit analysis for sleep and Major Depressive Disorder')
 
-fileList = ["sleep-2020-03-09.json","sleep-2020-04-08.json","sleep-2020-05-08.json","sleep-2020-06-07.json","sleep-2020-07-07.json"]
-st.markdown('''
-This is a markdown string that explains sleep data from date {0}
-'''.format(str('2020-03-09')))
+def crosscorr(datax, datay, lag=0, wrap=False):
+    """ Lag-N cross correlation. 
+    Shifted data filled with NaNs 
+    Next :
+    https://stackoverflow.com/questions/33171413/cross-correlation-time-lag-correlation-with-pandas
+    Parameters
+    ----------
+    lag : int, default 0
+    datax, datay : pandas.Series objects of equal length
+    Returns
+    ----------
+    crosscorr : float
+    """
+    if wrap:
+        shiftedy = datay.shift(lag)
+        shiftedy.iloc[:lag] = datay.iloc[-lag:].values
+        return datax.corr(shiftedy)
+    else: 
+        return datax.corr(datay.shift(lag))
+def check_time_lags(df,col0,col1):
+    d1 = df[col0]
+    d2 = df[col1]
+    seconds = 5
+    fps = 30
+    rs = [crosscorr(d1,d2, lag) for lag in range(-int(seconds*fps),int(seconds*fps+1))]
+    offset = np.ceil(len(rs)/2)-np.argmax(rs)
+    f,ax=plt.subplots(figsize=(20,13))
+    re_title = 'look for time lags when correlation is maximised (peak synchrony) betwen {0} and {1}'.format(col0,col1)
+    ax.plot(rs)
+    ax.axvline(np.ceil(len(rs)/2),color='k',linestyle='--',label='Center')
+    ax.axvline(np.argmax(rs),color='r',linestyle='--',label='Peak synchrony')
+    ax.set(title=f'Offset = {offset} frames\nS1 leads <> S2 leads'+re_title,ylim=[.1,.31],xlim=[0,301], xlabel='Offset',ylabel='Pearson r')
+    ax.set_xticks([0, 50, 100, 151, 201, 251, 301])
+    ax.set_xticklabels([-150, -100, -50, 0, 50, 100, 150]);
+    plt.legend()  
+    st.pyplot()
 
 
-sleep_df = process_fitbit_sleep_data(fileList)
-st.write(sleep_df, unsafe_allow_html=True)
+if __name__ == "__main__":  
+    st.title('Inner Galileo Fitbit analysis for sleep quality')
+    fileList = ["sleep-2020-03-09.json","sleep-2020-04-08.json","sleep-2020-05-08.json","sleep-2020-06-07.json","sleep-2020-07-07.json"]
+    st.markdown('''
+    This is a markdown string that explains sleep data from date {0}
+    '''.format(str('2020-03-09')))
+    sleep_df = process_fitbit_sleep_data(fileList)
+    st.write(sleep_df, unsafe_allow_html=True)
+    if PLOTLY:
+        plot_fitbit_sleep_data_plotly(sleep_df, ['rem.%', 'deep.%'])
+        plot_sleep_data_scatter_plotly(sleep_df, 'startMin', 'deep.%')
+        plot_corr_plotly(sleep_df)
+        check_time_lags(sleep_df,'rem.%','deep.%')
+    else:
+        plot_corr(sleep_df)
+        plot_fitbit_sleep_data(sleep_df, ['rem.%', 'deep.%'])
+        plot_sleep_data_scatter(sleep_df, 'startMin', 'deep.%')
 
-plot_fitbit_sleep_data_plotly(sleep_df, ['rem.%', 'deep.%'])
-
-#plot_fitbit_sleep_data(sleep_df, ['rem.%', 'deep.%'])
-#if PLOTLY:
-plot_sleep_data_scatter_plotly(sleep_df, 'startMin', 'deep.%')
-#else:
-#plot_sleep_data_scatter(sleep_df, 'startMin', 'deep.%')
-#if PLOTLY:
 
 
-#else:
-plot_corr(sleep_df)
-#leep_df = process_fitbit_sleep_data(fileList)
-'''
-Next :
-https://stackoverflow.com/questions/33171413/cross-correlation-time-lag-correlation-with-pandas
-'''
-plot_corr_plotly(sleep_df)
-
-st.markdown('done')
