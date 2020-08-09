@@ -2,3 +2,7 @@ plotly
 streamlit
 seaborn
 pandas
+numpy
+matplotlib 
+pydeck
+altair

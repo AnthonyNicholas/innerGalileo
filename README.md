@@ -2,12 +2,13 @@
 
 The goal of the inner Galileo project is to quantify & visualize metrics related to personal health - sleep, fitness etc. 
 
-How to run: python3 process-sleep-data.py
+Dependencies:  Pandas, numpy, matplotlib, streamlit, pydeck, altair
 
-or to run in app mode:
+
+
+How to run: 
 ```
-pip install streamlit
-streamlit run app.py
+  python3 process-sleep-data.py; or
+  streamlit run process-sleep-data.py
 ```
 
-Streamlit actually constitutes a development environment hitting the browser refresh button tells the app to sense changes to code base and restart the app. Errors are printed to stderr in the browser, stdout goes to terminal.

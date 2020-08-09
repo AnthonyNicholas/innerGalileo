@@ -8,23 +8,33 @@ import numpy as np
 import datetime as dt  
 import matplotlib.pyplot as plt  
 from datetime import datetime                          
-import streamlit as st
+import streamlit as st  
+import pydeck as pdk 
+import altair as alt 
+
+
 try: 
     json_normalize = pd.json_normalize
 except:
+	print('wrong version os pandas'
     from pandas.io.json import json_normalize
 # Function: process_fitbit_sleep_data()
 # fileList: A list of fitbit sleep data files eg ["sleep-2020-03-09.json","sleep-2020-04-08.json".....]
 # Returns a dataframe with the following columns:
 # ['duration', 'efficiency', 'endTime', 'mainSleep', 'minutesAfterWakeup', 'minutesAsleep', 'minutesAwake', 'minutesToFallAsleep', 'startTime', 'summary.asleep.count', 'summary.asleep.minutes', 'summary.awake.count', 'summary.awake.minutes', 'summary.deep.count', 'summary.deep.minutes', 'summary.deep.thirtyDayAvgMinutes', 'summary.light.count', 'summary.light.minutes', 'summary.light.thirtyDayAvgMinutes', 'summary.rem.count', 'summary.rem.minutes', 'summary.rem.thirtyDayAvgMinutes', 'summary.restless.count', 'summary.restless.minutes', 'summary.wake.count', 'summary.wake.minutes', 'summary.wake.thirtyDayAvgMinutes', 'timeInBed', 'type', 'dayOfWeek', 'rem.%', 'deep.%', 'wake.%', 'light.%', 'startMin', 'endMin']
+@st.cache
 def process_fitbit_sleep_data(fileList):
 
     full_sleep_df = None
 
     for input_file in fileList:
         input_df = pd.read_json(input_file)
-        detail_df = json_normalize(input_df['levels'])
-        sleep_df = pd.concat([input_df, detail_df], axis =1)
+		try:
+            detail_df = pd.json_normalize(input_df['levels'])
+		except:
+	        detail_df = json_normalize(input_df['levels'])
+        
+		sleep_df = pd.concat([input_df, detail_df], axis =1)
         full_sleep_df = pd.concat([full_sleep_df, sleep_df], sort=True)
 
     full_sleep_df['dateOfSleep']= pd.to_datetime(full_sleep_df['dateOfSleep'])
@@ -34,14 +44,17 @@ def process_fitbit_sleep_data(fileList):
 
     full_sleep_df['duration'] = full_sleep_df['duration']/(1000*60) # convert duration to minutes
 
+    # Add additional useful columns
+
     for col in ['rem','deep','wake','light']:
         full_sleep_df[col + '.%'] = 100*full_sleep_df['summary.' + col + '.minutes']/full_sleep_df['duration']
 
     full_sleep_df['startMin'] = pd.to_datetime(full_sleep_df['startTime']).dt.minute + 60 * pd.to_datetime(full_sleep_df['startTime']).dt.hour
-
     full_sleep_df['startMin'] = np.where(full_sleep_df['startMin'] < 240, full_sleep_df['startMin'] + 1440, full_sleep_df['startMin']) # handle v late nights
-
     full_sleep_df['endMin'] = pd.to_datetime(full_sleep_df['endTime']).dt.minute + 60 * pd.to_datetime(full_sleep_df['endTime']).dt.hour
+
+    full_sleep_df['avg7_startMin'] = full_sleep_df['startMin'].rolling(7).mean()
+    full_sleep_df['startTimeDeviation7.%'] = abs(full_sleep_df['startMin'] - full_sleep_df['avg7_startMin'])/full_sleep_df['startMin']
 
     #remove rows which are not mainSleep == True (these are naps not sleeps)
     full_sleep_df = full_sleep_df[full_sleep_df.mainSleep != False]
@@ -83,8 +96,7 @@ def plot_sleep_data_scatter(full_sleep_df, col1, col2):
     plt.savefig(output_filename, dpi=100)
     plt.close()	
 
-'''
-IN PROGRESS
+# IN PROGRESS
 
 def plot_sleep_data_bar(full_sleep_df, col1, col2):
     full_sleep_df.plot.bar(x=col1, y=col2)
@@ -133,8 +145,6 @@ def plot_sleep_data_bar_whole_df(full_sleep_df):
 
     # sleep_df.to_csv("test-output.csv")
 
-'''
-
 # Function: plot_corr(sleep_df)
 # Function plots a graphical correlation matrix for each pair of columns in the dataframe.
 # sleep_df: pandas DataFrame
@@ -160,21 +170,35 @@ def plot_corr(sleep_df):
     plt.savefig(output_filename, dpi=100)
     plt.close()	
 
-#if __name__ == "__main__":  
-st.title('fitbit analysis for sleep')
+if __name__ == "__main__":  
+	st.title('fitbit analysis for sleep')
 
-fileList = ["sleep-2020-03-09.json","sleep-2020-04-08.json","sleep-2020-05-08.json","sleep-2020-06-07.json","sleep-2020-07-07.json"]
+    fileList = ["sleep-2020-03-09.json","sleep-2020-04-08.json","sleep-2020-05-08.json","sleep-2020-06-07.json","sleep-2020-07-07.json"]
 
-sleep_df = process_fitbit_sleep_data(fileList)
+    sleep_df = process_fitbit_sleep_data(fileList)
 
-plot_fitbit_sleep_data(sleep_df, ['rem.%', 'deep.%'])
+    plot_fitbit_sleep_data(sleep_df, ['rem.%', 'deep.%'])
+    plot_sleep_data_scatter(sleep_df, 'startTimeDeviation7.%', 'deep.%')
+    plot_sleep_data_scatter(sleep_df, 'startTimeDeviation7.%', 'rem.%')
 
-plot_sleep_data_scatter(sleep_df, 'startMin', 'deep.%')
+    # st.image("sleep-scatter-startMin-deep.%.png", width=None)
+    # st.image("sleep-scatter-startMin-rem.%.png", width=None)
+    st.image("sleep-scatter-startTimeDeviation7.%-deep.%.png", width=None)
+    st.image("sleep-scatter-startTimeDeviation7.%-rem.%.png", width=None)
 
-    # full_sleep_df['avg14_startMin'] = full_sleep_df['startMin'].rolling(14).mean()
-    # full_sleep_df['startTimeDeviation1.%'] = full_sleep_df['startMin']/1440
-    # full_sleep_df['startTimeDeviation14.%'] = abs(full_sleep_df['startMin'] - full_sleep_df['avg14_startMin'])/full_sleep_df['startMin']
-    # full_sleep_df['avg4_rem'] = full_sleep_df['summary.rem.minutes'].rolling(4).mean()
-    # full_sleep_df['avg4_deep'] = full_sleep_df['summary.deep.minutes'].rolling(4).mean()
+    # summary_df: Select from available columns
+    # ['duration', 'efficiency', 'endTime', 'mainSleep', 'minutesAfterWakeup', 'minutesAsleep', 'minutesAwake', 'minutesToFallAsleep', 'startTime', 'summary.asleep.count', 'summary.asleep.minutes', 'summary.awake.count', 'summary.awake.minutes', 'summary.deep.count', 'summary.deep.minutes', 'summary.deep.thirtyDayAvgMinutes', 'summary.light.count', 'summary.light.minutes', 'summary.light.thirtyDayAvgMinutes', 'summary.rem.count', 'summary.rem.minutes', 'summary.rem.thirtyDayAvgMinutes', 'summary.restless.count', 'summary.restless.minutes', 'summary.wake.count', 'summary.wake.minutes', 'summary.wake.thirtyDayAvgMinutes', 'timeInBed', 'type', 'dayOfWeek', 'rem.%', 'deep.%', 'wake.%', 'light.%', 'startMin', 'endMin']
+
+
+    sleep_summary_df = sleep_df[['startMin', 'rem.%', 'deep.%']]
+
+    # Normalize sleep_summary_df
+    sleep_summary_df = sleep_summary_df/sleep_summary_df[0:1].values
+
+    st.line_chart(sleep_summary_df)
+
+    st.write(sleep_summary_df)
+
+
 
 
