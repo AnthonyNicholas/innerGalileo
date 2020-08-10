@@ -122,7 +122,7 @@ def df_derived_by_shift(df,lag=0,NON_DER=[]):
         for c in columns:
             dfn[c] = df[k].shift(periods=i)
             i+=1
-    df = pd.concat([df, dfn], axis=1, join_axes=[df.index])
+        df = pd.concat([df, dfn], axis=1, join_axes=[df.index])
     return df
 
 
@@ -167,6 +167,17 @@ def plot_fitbit_sleep_data_plotly(sleep_df, cols):
                         mode='lines+markers',
                         name='deep sleep'))
     st.write(fig)
+def plot_sleep_data_joint(full_sleep_df, col1, col2):
+    sns.set(style='whitegrid', rc={"grid.linewidth": 0.1})
+    sns.set_context("paper", font_scale=0.5)   
+
+    fig = sns.jointplot(x=full_sleep_df[col1], y=full_sleep_df[col2],kind='hex')
+
+    #ull_sleep_df.plot.scatter(x=col1, y=col2)
+    #plt.title('Sleep plot')
+    plt.ylabel(col2)
+    plt.xlabel(col1)
+    st.pyplot()
 
 # Function: plot_sleep_data_scatter 
 # sleep_df: a sleep dataframe

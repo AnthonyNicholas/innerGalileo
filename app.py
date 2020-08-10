@@ -39,13 +39,13 @@ if __name__ == "__main__":
     This is a markdown string that explains sleep data from date {0}
     '''.format(str('2020-03-09')))
     sleep_df = pf.process_fitbit_sleep_data(fileList)
-
+    #st.success(sleep_df['rem.%'].describe())
 
     if PLOTLY:
 
         pf.plot_fitbit_sleep_data_plotly(sleep_df, ['rem.%', 'deep.%'])
         pf.plot_sleep_data_scatter_plotly(sleep_df, 'startMin', 'deep.%')
-
+        pf.plot_sleep_data_joint(sleep_df, 'startMin', 'deep.%')
         '''
         If imputation worked there would be no nans visible below:
         need to drop nans
@@ -58,13 +58,7 @@ if __name__ == "__main__":
 
         pf.plot_corr_plotly(sleep_df)
 
-        NON_DER = ['startMin',]
-        lag = 5
-        ts_sleep_df = pf.df_derived_by_shift(sleep_df,lag,NON_DER)
-        pf.plot_corr(ts_sleep_df,title='plus_lag {0}'.format(lag))
-        pf.check_time_lags(sleep_df,'rem.%','deep.%')
-        pf.plot_df_plotly(sleep_df)#,'rem.%','deep.%')
-
+        
 
 
 
