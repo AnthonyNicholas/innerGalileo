@@ -71,6 +71,9 @@ if __name__ == "__main__":
         '''
         pf.covariance_matrix(sleep_df)
 
+        pf.check_time_lags(sleep_df, 'rem.%', 'deep.%')
+
+        pf.check_time_lags(sleep_df, 'startMin', 'deep.%')
 
 
 

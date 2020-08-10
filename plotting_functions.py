@@ -173,8 +173,6 @@ def plot_sleep_data_joint(full_sleep_df, col1, col2):
 
     fig = sns.jointplot(x=full_sleep_df[col1], y=full_sleep_df[col2],kind='hex')
 
-    #ull_sleep_df.plot.scatter(x=col1, y=col2)
-    #plt.title('Sleep plot')
     plt.ylabel(col2)
     plt.xlabel(col1)
     st.pyplot()
@@ -203,6 +201,13 @@ def plot_sleep_data_scatter_plotly(full_sleep_df, col1, col2):
 
     st.write(fig)
 
+COLS = ['duration', 'efficiency', 
+'summary.deep.minutes', 'summary.deep.minutes.%', 
+'summary.light.minutes', 'summary.light.minutes.%', 
+'summary.rem.minutes', 'summary.rem.minutes.%', 
+'summary.wake.minutes', 'summary.wake.minutes.%',
+    'startMin', 'avg4_startMin', 
+    'startTimeDeviation1.%', 'startTimeDeviation4.%']
 # Function: plot_corr(sleep_df)
 # Function plots a graphical correlation matrix for each pair of columns in the dataframe.
 # sleep_df: pandas DataFrame
@@ -218,15 +223,9 @@ def plot_corr(sleep_df,title=None):
     mask[np.triu_indices_from(mask)] = True
     fig = sns.heatmap(sleep_df.corr(),mask=mask,
         linewidths=0.1,square=True, linecolor='white')
-    cols = ['duration', 'efficiency', 
-    'summary.deep.minutes', 'summary.deep.minutes.%', 
-    'summary.light.minutes', 'summary.light.minutes.%', 
-    'summary.rem.minutes', 'summary.rem.minutes.%', 
-    'summary.wake.minutes', 'summary.wake.minutes.%',
-     'startMin', 'avg4_startMin', 
-     'startTimeDeviation1.%', 'startTimeDeviation4.%']
-    plt.xticks(range(sleep_df.shape[1]), cols, fontsize=12, rotation="vertical")
-    plt.yticks(range(sleep_df.shape[1]), cols, fontsize=12)
+ 
+    plt.xticks(range(sleep_df.shape[1]), COLS, fontsize=12, rotation="vertical")
+    plt.yticks(range(sleep_df.shape[1]), COLS, fontsize=12)
     if title is not None:
         plt.title('Correlation Matrix'+str(title))#, fontsize=14)
     else:
