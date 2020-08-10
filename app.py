@@ -52,18 +52,19 @@ if __name__ == "__main__":
         fill with zero,
         impute zeros with mean
         '''
-        #pf.plot_df_plotly(sleep_df)#,'rem.%','deep.%')
+        pf.covariance_matrix(sleep_df)
+
         pf.plot_corr(sleep_df)
 
         pf.plot_corr_plotly(sleep_df)
 
-        #NON_DER = ['startMin',]
-        #ts_sleep_df = pf.df_derived_by_shift(sleep_df,1,NON_DER)
-        #pf.plot_corr(ts_sleep_df)
-        #pf.covariance_matrix(sleep_df)
-
+        NON_DER = ['startMin',]
+        lag = 5
+        ts_sleep_df = pf.df_derived_by_shift(sleep_df,lag,NON_DER)
+        pf.plot_corr(ts_sleep_df,title='plus_lag {0}'.format(lag))
         pf.check_time_lags(sleep_df,'rem.%','deep.%')
-        
+        pf.plot_df_plotly(sleep_df)#,'rem.%','deep.%')
+
 
 
 

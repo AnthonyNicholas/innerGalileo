@@ -83,12 +83,16 @@ def process_fitbit_sleep_data(fileList):
 
 def covariance_matrix(df):
     # Covariance
-    X = df.values[:]
+    '''
+    df = try_to_impute(df)
+    X = np.array(df.values[:])
     # Calculate covariance matrix 
-    cov_matrix = numpy.cov((X.T) # (or with np.cov(X.T))
+    cov_matrix = np.cov(X) # (or with np.cov(X.T))
+    '''
     colormap = plt.cm.RdBu
-
-    svm = sns.heatmap(cov_matrix,
+    sns.set(style='whitegrid')#, rc={"grid.linewidth": 0.1})
+    #sns.set_context("paper", font_scale=1.9)   
+    svm = sns.heatmap(df.cov(),
                 square=True,linecolor='white')    
     cols = ['duration', 'efficiency', 'summary.deep.minutes', 'summary.deep.minutes.%', 'summary.light.minutes', 'summary.light.minutes.%', 'summary.rem.minutes', 'summary.rem.minutes.%', 'summary.wake.minutes', 'summary.wake.minutes.%', 'startMin', 'avg4_startMin', 'startTimeDeviation1.%', 'startTimeDeviation4.%']
     plt.xticks(range(df.shape[1]), cols, fontsize=12, rotation="vertical")
@@ -97,7 +101,7 @@ def covariance_matrix(df):
     plt.title('Covariance Matrix', fontsize=14)
     st.pyplot()
 
-@st.cache
+#@st.cache
 def df_derived_by_shift(df,lag=0,NON_DER=[]):
     # https://www.kaggle.com/dedecu/cross-correlation-time-lag-with-pandas
     df = df.copy()
@@ -118,7 +122,7 @@ def df_derived_by_shift(df,lag=0,NON_DER=[]):
         for c in columns:
             dfn[c] = df[k].shift(periods=i)
             i+=1
-        df = pd.concat([df, dfn], axis=1, join_axes=[df.index])
+    df = pd.concat([df, dfn], axis=1, join_axes=[df.index])
     return df
 
 
@@ -129,7 +133,7 @@ def try_to_impute(sleep_df):
     del df['dayOfWeek']
     del df['startTime']
     del df['type']
-    df = df.dropna()
+    #df = df.dropna()
     #imp = SimpleImputer(strategy="most_frequent")
     imp = SimpleImputer(missing_values=np.nan, strategy='mean')
     df.values[:] = imp.fit_transform(df.values[:])
@@ -154,7 +158,6 @@ def plot_fitbit_sleep_data(sleep_df, cols):
 	
     st.pyplot()
 def plot_fitbit_sleep_data_plotly(sleep_df, cols):
-
     X = [i for i in range(0,len(sleep_df.index.values))]
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=X, y=sleep_df['rem.%'],
@@ -176,6 +179,10 @@ def plot_sleep_data_scatter(full_sleep_df, col1, col2):
     plt.xlabel(col1)
     st.pyplot()
 
+
+# Function: plot_sleep_data_scatter_plotly(sleep_df)
+# Function plots a scatter plot for two coloumns of the dataframe.
+# sleep_df: pandas DataFrame
 def plot_sleep_data_scatter_plotly(full_sleep_df, col1, col2):
     fig = px.scatter(x=full_sleep_df[col1], y=full_sleep_df[col2],labels={
                      "x": col1,
@@ -189,7 +196,7 @@ def plot_sleep_data_scatter_plotly(full_sleep_df, col1, col2):
 # Function plots a graphical correlation matrix for each pair of columns in the dataframe.
 # sleep_df: pandas DataFrame
 
-def plot_corr(sleep_df,lag=None):
+def plot_corr(sleep_df,title=None):
 
     f = plt.figure(figsize=(19, 15))
 
@@ -209,7 +216,11 @@ def plot_corr(sleep_df,lag=None):
      'startTimeDeviation1.%', 'startTimeDeviation4.%']
     plt.xticks(range(sleep_df.shape[1]), cols, fontsize=12, rotation="vertical")
     plt.yticks(range(sleep_df.shape[1]), cols, fontsize=12)
-    plt.title('Correlation Matrix')#, fontsize=14)
+    if title is not None:
+        plt.title('Correlation Matrix'+str(title))#, fontsize=14)
+    else:
+        plt.title('Correlation Matrix')#+str(title))#, fontsize=14)
+
     st.pyplot()
 
 def df_to_plotly(df,log=False):
