@@ -36,12 +36,16 @@ if __name__ == "__main__":
     fileList = ["sleep-2020-03-09.json","sleep-2020-04-08.json","sleep-2020-05-08.json","sleep-2020-06-07.json","sleep-2020-07-07.json"]
 
     st.markdown('''
-    This is a markdown string that explains sleep data from date {0}
+    This is a markdown string that explains sleep data fro
+    m date {0}
     '''.format(str('2020-03-09')))
     sleep_df = pf.process_fitbit_sleep_data(fileList)
-    #st.success(sleep_df['rem.%'].describe())
 
     if PLOTLY:
+        '''
+        mouse over to see nan's
+        '''
+        pf.plot_df_plotly(sleep_df)#,'rem.%','deep.%')
 
         pf.plot_fitbit_sleep_data_plotly(sleep_df, ['rem.%', 'deep.%'])
         pf.plot_sleep_data_scatter_plotly(sleep_df, 'startMin', 'deep.%')
@@ -52,13 +56,21 @@ if __name__ == "__main__":
         fill with zero,
         impute zeros with mean
         '''
-        pf.covariance_matrix(sleep_df)
 
         pf.plot_corr(sleep_df)
-
+        ''' 
+        This is plotly correlation matrix this can be combined with
+        seaborn approach and masking
+        '''
         pf.plot_corr_plotly(sleep_df)
+        '''
+        Covariance matrix backbone of PCA, more useful when we have more features
+        variables that vary together includes negatively correlations, or non-proporttional changes
+        big changes that correlate with small changes (sometimes negatively correlations)
 
-        
+        '''
+        pf.covariance_matrix(sleep_df)
+
 
 
 
