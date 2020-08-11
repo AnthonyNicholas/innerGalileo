@@ -24,7 +24,10 @@ except:
 from tqdm.auto import tqdm
 import seaborn as sns    
 from statsmodels.tsa.stattools import grangercausalitytests
-from sklearn.impute import SimpleImputer
+
+from sklearn.experimental import enable_iterative_imputer
+from sklearn.impute import IterativeImputer
+from sklearn.impute import SimpleImputer#, IterativeImputer
 import copy
 # Function: process_fitbit_sleep_data()
 # fileList: A list of fitbit sleep data files eg ["sleep-2020-03-09.json","sleep-2020-04-08.json".....]
@@ -80,15 +83,22 @@ def process_fitbit_sleep_data(fileList):
 
     return full_sleep_df
 
+def cluster_map(df):
+    #del df['endTime']
+    #del df['dayOfWeek']
+    #del df['startTime']
+    #del df['type']
+
+    del df['endTime']
+    del df['dayOfWeek']
+    del df['startTime']
+    del df['type']
+    g = sns.clustermap(df)
+    st.pyplot()
 
 def covariance_matrix(df):
     # Covariance
-    '''
-    df = try_to_impute(df)
-    X = np.array(df.values[:])
-    # Calculate covariance matrix 
-    cov_matrix = np.cov(X) # (or with np.cov(X.T))
-    '''
+
     colormap = plt.cm.RdBu
     sns.set(style='whitegrid')#, rc={"grid.linewidth": 0.1})
     #sns.set_context("paper", font_scale=1.9)   
@@ -127,17 +137,20 @@ def df_derived_by_shift(df,lag=0,NON_DER=[]):
 
 
 
-def try_to_impute(sleep_df):
+def try_to_impute(temp_df):
     # Drop categorical columns as the imputer can't handle strings
-    df = copy.copy(sleep_df)
-    del df['endTime']
-    del df['dayOfWeek']
-    del df['startTime']
-    del df['type']
-    # Imputing like this wont work as whole columns are zero.
-    imp = SimpleImputer(missing_values=np.nan, strategy='mean')
-    df.values[:] = imp.fit_transform(df.values[:])
-    return df
+
+    temp_df = temp_df.apply(pd.to_numeric, errors='coerce')
+    temp_df.dropna(axis=0, how='any',inplace=True, thresh=5)
+    temp_df.reset_index(drop=True)
+    '''
+    imp = IterativeImputer(random_state=0)
+    X = temp_df.values[:]
+    imp.fit(X)
+    temp_df.values[:] = imp.transform(X)
+    '''
+
+    return temp_df
 
 # Function: plot_fitbit_sleep_data()
 # sleep_df: a sleep dataframe

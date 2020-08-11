@@ -50,7 +50,8 @@ if __name__ == "__main__":
         '''
 
         pf.plot_df_plotly(sleep_df)#,'rem.%','deep.%')
-        sleep_df.dropna(axis=1, how='any',inplace=True, thresh=5)
+        sleep_df.dropna(axis=1, how='any',inplace=True, thresh=4)
+        sleep_df = pf.try_to_impute(sleep_df)
         #sleep_df.dropna(axis=0,inplace=True)
 
         '''
@@ -58,10 +59,17 @@ if __name__ == "__main__":
         '''
         pf.plot_df_plotly(sleep_df)#,'rem.%','deep.%')
         st.write(sleep_df.describe())
-
+        '''
+        clustergram useful for exploration
+        '''
+        #pf.cluster_map(sleep_df)
         pf.plot_fitbit_sleep_data_plotly(sleep_df, ['rem.%', 'deep.%'])
         pf.plot_sleep_data_scatter_plotly(sleep_df, 'startMin', 'deep.%')
+        '''
+        hexbins show density of data better:
+        '''
         pf.plot_sleep_data_joint(sleep_df, 'startMin', 'deep.%')
+    
         '''
         If imputation worked there would be no nans visible below:
         need to drop nans
