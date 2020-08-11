@@ -7,25 +7,35 @@ import pandas as pd
 import numpy as np
 import datetime as dt  
 import matplotlib.pyplot as plt  
-from datetime import datetime
+from datetime import datetime                          
 import streamlit as st  
 import pydeck as pdk 
 import altair as alt 
 
-@st.cache
 
+try: 
+    json_normalize = pd.json_normalize
+except:
+	print('wrong version os pandas'
+    from pandas.io.json import json_normalize
+    
 # Function: process_fitbit_sleep_data()
 # fileList: A list of fitbit sleep data files eg ["sleep-2020-03-09.json","sleep-2020-04-08.json".....]
 # Returns a dataframe with the following columns:
 # ['duration', 'efficiency', 'endTime', 'mainSleep', 'minutesAfterWakeup', 'minutesAsleep', 'minutesAwake', 'minutesToFallAsleep', 'startTime', 'summary.asleep.count', 'summary.asleep.minutes', 'summary.awake.count', 'summary.awake.minutes', 'summary.deep.count', 'summary.deep.minutes', 'summary.deep.thirtyDayAvgMinutes', 'summary.light.count', 'summary.light.minutes', 'summary.light.thirtyDayAvgMinutes', 'summary.rem.count', 'summary.rem.minutes', 'summary.rem.thirtyDayAvgMinutes', 'summary.restless.count', 'summary.restless.minutes', 'summary.wake.count', 'summary.wake.minutes', 'summary.wake.thirtyDayAvgMinutes', 'timeInBed', 'type', 'dayOfWeek', 'rem.%', 'deep.%', 'wake.%', 'light.%', 'startMin', 'endMin']
+#@st.cache
 def process_fitbit_sleep_data(fileList):
 
     full_sleep_df = None
 
     for input_file in fileList:
         input_df = pd.read_json(input_file)
-        detail_df = pd.json_normalize(input_df['levels'])
-        sleep_df = pd.concat([input_df, detail_df], axis =1)
+		try:
+            detail_df = pd.json_normalize(input_df['levels'])
+		except:
+	        detail_df = json_normalize(input_df['levels'])
+        
+		sleep_df = pd.concat([input_df, detail_df], axis =1)
         full_sleep_df = pd.concat([full_sleep_df, sleep_df], sort=True)
 
     full_sleep_df['dateOfSleep']= pd.to_datetime(full_sleep_df['dateOfSleep'])
@@ -162,6 +172,7 @@ def plot_corr(sleep_df):
     plt.close()	
 
 if __name__ == "__main__":  
+	st.title('fitbit analysis for sleep')
 
     fileList = ["sleep-2020-03-09.json","sleep-2020-04-08.json","sleep-2020-05-08.json","sleep-2020-06-07.json","sleep-2020-07-07.json"]
 
