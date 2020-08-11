@@ -84,16 +84,18 @@ def process_fitbit_sleep_data(fileList):
     return full_sleep_df
 
 def cluster_map(df):
-    #del df['endTime']
-    #del df['dayOfWeek']
-    #del df['startTime']
-    #del df['type']
-
     del df['endTime']
     del df['dayOfWeek']
     del df['startTime']
     del df['type']
-    g = sns.clustermap(df)
+    del df['mainSleep']
+    st.markdown(np.sum(df.isnull().sum().values))
+    #del df['endTime']
+    #del df['dayOfWeek']
+    #del df['startTime']
+    #del df['type']
+    #df = try_to_impute(df)
+    g = sns.clustermap(df.corr())
     st.pyplot()
 
 def covariance_matrix(df):
@@ -307,10 +309,11 @@ def check_time_lags(df,col0,col1):
     rs = [crosscorr(d1,d2, lag) for lag in range(-int(hours*days),int(hours*days+1))]
     offset = np.ceil(len(rs)/2)-np.argmax(rs)
     f,ax=plt.subplots(figsize=(20,13))
-    re_title = 'look for time lags when correlation is maximised (peak synchrony) betwen {0} and {1}'.format(col0,col1)
+    re_title = 'look for time lags when correlation is \n \
+                 maximised (peak synchrony) betwen {0} and {1}'.format(col0,col1)
     ax.plot(rs)
-    ax.axvline(np.ceil(len(rs)/2),color='k',linestyle='--',label='Center')
-    ax.axvline(np.argmax(rs),color='r',linestyle='--',label='Peak synchrony')
+    ax.axvline(np.ceil(len(rs)/2),color='k',linestyle='--',label='Center',linewidth=11.0)
+    ax.axvline(np.argmax(rs),color='r',linestyle='--',label='Peak synchrony',linewidth=11.0)
     ax.set(title=f'Offset = {offset} frames\nS1 leads <> S2 leads'+re_title,ylim=[.1,.31],xlim=[0,301], xlabel='Offset',ylabel='Pearson r')
     ax.set_xticks([0, 50, 100, 151, 201, 251, 301])
     ax.set_xticklabels([-150, -100, -50, 0, 50, 100, 150]);

@@ -42,27 +42,38 @@ if __name__ == "__main__":
     sleep_df = pf.process_fitbit_sleep_data(fileList)
 
     if PLOTLY:
-        '''
+        st.markdown('''
+        There are {0} Nan values
         # To see nan's
         Mouse over 
         It looks like some whole columns are NaN and there are a few with just two or so samples.
         We should drop nan columns.
-        '''
+        '''.format(np.sum(sleep_df.isnull().sum().values)))
 
         pf.plot_df_plotly(sleep_df)#,'rem.%','deep.%')
         sleep_df.dropna(axis=1, how='any',inplace=True, thresh=4)
-        sleep_df = pf.try_to_impute(sleep_df)
+        sleep_df = pf.try_to_impute(sleep_df)       
+        sleep_df.dropna(axis=1, how='any',inplace=True, thresh=0)
+        sleep_df.dropna(axis=0, how='any',inplace=True, thresh=10)
+
+
+        sleep_df = sleep_df.apply(lambda x: x.fillna(sleep_df.mean()),axis=1)
         #sleep_df.dropna(axis=0,inplace=True)
 
         '''
         # After drop nan
+        that  didn't work perfectly
         '''
+
         pf.plot_df_plotly(sleep_df)#,'rem.%','deep.%')
         st.write(sleep_df.describe())
+        #st.write(sleep_df.dtypes.T)
         '''
         clustergram useful for exploration
         '''
-        #pf.cluster_map(sleep_df)
+        sleep_df.dropna(axis=0, how='any',inplace=True, thresh=4)
+
+        pf.cluster_map(sleep_df)
         pf.plot_fitbit_sleep_data_plotly(sleep_df, ['rem.%', 'deep.%'])
         pf.plot_sleep_data_scatter_plotly(sleep_df, 'startMin', 'deep.%')
         '''
