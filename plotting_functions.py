@@ -47,7 +47,7 @@ sns_colorscale = [[0.0, '#3f7f93'], #cmap = sns.diverging_palette(220, 10, as_cm
 [0.929, '#de535e'],
 [1.0, '#d93a46']]
 
-@st.cache            
+#@st.cache(allow_output_mutation=True)            
 def process_fitbit_sleep_data(fileList):
     full_sleep_df = None
     for input_file in fileList:#,title='Loading in fitbit data'):
@@ -95,8 +95,8 @@ def covariance_matrix(df):
     svm = sns.heatmap(df.cov(),
                 square=True,linecolor='white')    
     cols = ['duration', 'efficiency', 'summary.deep.minutes', 'summary.deep.minutes.%', 'summary.light.minutes', 'summary.light.minutes.%', 'summary.rem.minutes', 'summary.rem.minutes.%', 'summary.wake.minutes', 'summary.wake.minutes.%', 'startMin', 'avg4_startMin', 'startTimeDeviation1.%', 'startTimeDeviation4.%']
-    plt.xticks(range(df.shape[1]), cols, fontsize=12, rotation="vertical")
-    plt.yticks(range(df.shape[1]), cols, fontsize=12)
+    plt.xticks(range(df.shape[1]), cols, rotation="vertical")
+    plt.yticks(range(df.shape[1]), cols)
 
     plt.title('Covariance Matrix', fontsize=14)
     st.pyplot()
@@ -128,13 +128,13 @@ def df_derived_by_shift(df,lag=0,NON_DER=[]):
 
 
 def try_to_impute(sleep_df):
+    # Drop categorical columns as the imputer can't handle strings
     df = copy.copy(sleep_df)
     del df['endTime']
     del df['dayOfWeek']
     del df['startTime']
     del df['type']
-    #df = df.dropna()
-    #imp = SimpleImputer(strategy="most_frequent")
+    # Imputing like this wont work as whole columns are zero.
     imp = SimpleImputer(missing_values=np.nan, strategy='mean')
     df.values[:] = imp.fit_transform(df.values[:])
     return df
@@ -237,9 +237,9 @@ def df_to_plotly(df,log=False):
     return {'z': df.values.tolist(),
             'x': df.columns.tolist(),
             'y': df.index.tolist()}
-def plot_corr_plotly(sleep_df):
+def plot_imshow_plotly(sleep_df):
 
-    heat = go.Heatmap(df_to_plotly(sleep_df.corr()),colorscale=sns_colorscale)
+    heat = go.Heatmap(df_to_plotly(sleep_df),colorscale=sns_colorscale)
     #fig = go.Figure(data=
 
     title = 'Correlation Matrix'               
