@@ -83,21 +83,29 @@ def process_fitbit_sleep_data(fileList):
 
     return full_sleep_df
 
-def cluster_map(df):
-    del df['endTime']
-    del df['dayOfWeek']
-    del df['startTime']
-    del df['type']
-    del df['mainSleep']
-    st.markdown(np.sum(df.isnull().sum().values))
-    #del df['endTime']
-    #del df['dayOfWeek']
-    #del df['startTime']
-    #del df['type']
-    #df = try_to_impute(df)
+def cluster_map_corr(df):
+    try:
+        del df['endTime']
+        del df['dayOfWeek']
+        del df['startTime']
+        del df['type']
+        del df['mainSleep']
+    except:
+        pass
+    #
     g = sns.clustermap(df.corr())
-    st.pyplot()
+    plt.title('Cluster map of correlation matrix')#+str(title))#, fontsize=14)
 
+    st.pyplot()
+    return df
+
+
+def cluster_map_cov(df):
+    g = sns.clustermap(df.cov())
+    st.pyplot()
+    plt.title('Cluster map of covariance matrix')#+str(title))#, fontsize=14)
+
+    return df
 def covariance_matrix(df):
     # Covariance
 
