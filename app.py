@@ -13,6 +13,13 @@ import sklearn
 import plotting_functions as pf
 import utils 
 CACHED = True
+import os
+# sense if running on heroku
+if 'DYNO' in os.environ:
+    heroku = False
+else:
+    heroku = True
+
 if __name__ == "__main__":  
     if CACHED:
         st.title('The Quantified Sleep')

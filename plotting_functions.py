@@ -56,21 +56,21 @@ sns_colorscale = [[0.0, '#3f7f93'], #cmap = sns.diverging_palette(220, 10, as_cm
 
 def cluster_map_corr(df):
     #st.write('this method mutated df columns, has side effects watch out')
-    '''
-    try:
+    
+    if 'endTime' in df.columns:
         del df['endTime']
         del df['dayOfWeek']
         del df['startTime']
         del df['type']
         del df['mainSleep']
-    except:
-        pass
+
     #
-    '''
+    
     g = sns.clustermap(df.corr())
     plt.title('Cluster map of correlation matrix')#+str(title))#, fontsize=14)
     st.pyplot()
-    return df
+    reduced_df = df
+    return reduced_df
 
 
 def cluster_map_cov(df):
