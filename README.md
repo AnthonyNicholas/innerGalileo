@@ -20,4 +20,4 @@ To get more data on OSX:
 curl -s -L https://www.dropbox.com/sh/0nz5l0zwcuu7ojf/AADvG7nkUBmT93vrOVnQfj9Ua?dl=0
 ```
 
-
+[A similar project](https://pdfs.semanticscholar.org/8e32/64552e108d96e9b9fb95b9795bac989f5052.pdf)
