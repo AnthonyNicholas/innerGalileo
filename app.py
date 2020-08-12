@@ -27,8 +27,7 @@ if __name__ == "__main__":
         fileList = ["sleep-2020-03-09.json","sleep-2020-04-08.json","sleep-2020-05-08.json","sleep-2020-06-07.json","sleep-2020-07-07.json"]
         st.markdown('Analysis for sleep quality')
 
-        st.markdown('''
-        This is a markdown string that explains sleep data fro
+        st.markdown('''We are mining and exploring sleep data fro
         m date {0}
         '''.format(str('2020-03-09')))
     else:
