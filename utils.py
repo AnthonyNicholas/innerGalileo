@@ -16,11 +16,30 @@ except:
 progress_bar = st.sidebar.progress(0)
 status_text = st.sidebar.empty()
 
+from tqdm.auto import tqdm
+
+class tqdm:
+    def __init__(self, iterable, title=None):
+        if title:
+            st.write(title)
+        self.prog_bar = st.progress(0)
+        self.iterable = iterable
+        self.length = len(iterable)
+        self.i = 0
+
+    def __iter__(self):
+        for obj in self.iterable:
+            yield obj
+            self.i += 1
+            current_prog = self.i / self.length
+            self.prog_bar.progress(current_prog)
+
 #@st.cache(allow_output_mutation=True)            
 def process_fitbit_sleep_data(fileList):
     full_sleep_df = None
     cnt = 0
-    for input_file in fileList:#,title='Loading in fitbit data'):
+    #tqdm(follow_links,title='Scrape in Progress. Please Wait.')
+    for input_file in tqdm(fileList,title='Loading in short interval of sleep fitbit data'):
         input_df = pd.read_json(input_file)
         detail_df = json_normalize(input_df['levels'])
         sleep_df = pd.concat([input_df, detail_df], axis =1)
@@ -53,3 +72,30 @@ def process_fitbit_sleep_data(fileList):
     full_sleep_df.drop(['logId', 'data', 'shortData', 'infoCode', 'levels'], axis=1, inplace=True)
 
     return full_sleep_df
+'''
+import dask
+def dask_map_function(eval_,invalid_ind):
+    results = []
+    for x in invalid_ind:
+        y = dask.delayed(eval_)(x)
+        results.append(y)
+    fitnesses = dask.compute(*results)
+    return fitnesses
+'''
+def process_fitbit_every_data(fileList):
+    df = None
+    cnt = 0
+    for input_file in tqdm(fileList,title='Loading in massive everything data set'):
+        input_df = pd.read_json(input_file)
+
+        if cnt>0:
+            df = pd.concat([df, input_df], axis =1)
+        else:
+            df = input_df
+        
+        #st.write(reduced_df.describe())
+        progress_bar.progress(cnt/len(fileList))
+        status_text.text("Data Reading %i%% Complete" % float(cnt/len(fileList)))    
+        cnt+=1
+    #st.write(df.describe())
+    return df
