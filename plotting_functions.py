@@ -5,22 +5,22 @@ Processes fitbit sleep data files, uploads data into fitbit dataframe, outputs g
 
 import pandas as pd
 import numpy as np
-import datetime as dt  
+#import datetime as dt  
 import matplotlib.pyplot as plt  
-from datetime import datetime                          
+#from datetime import datetime                          
 import streamlit as st
-try: 
-    json_normalize = pd.json_normalize
-except:
-    from pandas.io.json import json_normalize
+#try: 
+#    json_normalize = pd.json_normalize
+#except:
+#    from pandas.io.json import json_normalize
 
 try:
     import plotly.express as px
-    import plotly.graph_objects as go # or plotly.express as px
-
+    import plotly.graph_objects as go 
     PLOTLY = True
 except:
     PLOTLY = False
+    raise(Exception('need to install plotly'))
 from tqdm.auto import tqdm
 import seaborn as sns    
 from statsmodels.tsa.stattools import grangercausalitytests
@@ -29,6 +29,9 @@ from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer
 from sklearn.impute import SimpleImputer#, IterativeImputer
 import copy
+
+import time
+import numpy as np
 # Function: process_fitbit_sleep_data()
 # fileList: A list of fitbit sleep data files eg ["sleep-2020-03-09.json","sleep-2020-04-08.json".....]
 # Returns a dataframe with the following columns:
@@ -50,61 +53,30 @@ sns_colorscale = [[0.0, '#3f7f93'], #cmap = sns.diverging_palette(220, 10, as_cm
 [0.929, '#de535e'],
 [1.0, '#d93a46']]
 
-#@st.cache(allow_output_mutation=True)            
-def process_fitbit_sleep_data(fileList):
-    full_sleep_df = None
-    for input_file in fileList:#,title='Loading in fitbit data'):
-        input_df = pd.read_json(input_file)
-        detail_df = json_normalize(input_df['levels'])
-        sleep_df = pd.concat([input_df, detail_df], axis =1)
-        full_sleep_df = pd.concat([full_sleep_df, sleep_df], sort=True)
-
-    full_sleep_df['dateOfSleep']= pd.to_datetime(full_sleep_df['dateOfSleep'])
-    full_sleep_df['dayOfWeek'] = full_sleep_df['dateOfSleep'].dt.day_name()
-    full_sleep_df = full_sleep_df.set_index('dateOfSleep')
-    full_sleep_df.sort_index(inplace=True)
-
-    full_sleep_df['duration'] = full_sleep_df['duration']/(1000*60) # convert duration to minutes
-
-    for col in ['rem','deep','wake','light']:
-        full_sleep_df[col + '.%'] = 100*full_sleep_df['summary.' + col + '.minutes']/full_sleep_df['duration']
-
-    full_sleep_df['startMin'] = pd.to_datetime(full_sleep_df['startTime']).dt.minute + 60 * pd.to_datetime(full_sleep_df['startTime']).dt.hour
-
-    full_sleep_df['startMin'] = np.where(full_sleep_df['startMin'] < 240, full_sleep_df['startMin'] + 1440, full_sleep_df['startMin']) # handle v late nights
-
-    full_sleep_df['endMin'] = pd.to_datetime(full_sleep_df['endTime']).dt.minute + 60 * pd.to_datetime(full_sleep_df['endTime']).dt.hour
-
-    #remove rows which are not mainSleep == True (these are naps not sleeps)
-    full_sleep_df = full_sleep_df[full_sleep_df.mainSleep != False]
-
-    #remove column which are not needed/useful
-    full_sleep_df.drop(['logId', 'data', 'shortData', 'infoCode', 'levels'], axis=1, inplace=True)
-
-    return full_sleep_df
 
 def cluster_map_corr(df):
-    try:
+    #st.write('this method mutated df columns, has side effects watch out')
+    
+    if 'endTime' in df.columns:
         del df['endTime']
         del df['dayOfWeek']
         del df['startTime']
         del df['type']
         del df['mainSleep']
-    except:
-        pass
+
     #
+    
     g = sns.clustermap(df.corr())
     plt.title('Cluster map of correlation matrix')#+str(title))#, fontsize=14)
-
     st.pyplot()
-    return df
+    reduced_df = df
+    return reduced_df
 
 
 def cluster_map_cov(df):
     g = sns.clustermap(df.cov())
-    st.pyplot()
     plt.title('Cluster map of covariance matrix')#+str(title))#, fontsize=14)
-
+    st.pyplot()
     return df
 def covariance_matrix(df):
     # Covariance
@@ -122,6 +94,8 @@ def covariance_matrix(df):
     st.pyplot()
 
 #@st.cache
+'''
+depricated
 def df_derived_by_shift(df,lag=0,NON_DER=[]):
     # https://www.kaggle.com/dedecu/cross-correlation-time-lag-with-pandas
     df = df.copy()
@@ -144,7 +118,7 @@ def df_derived_by_shift(df,lag=0,NON_DER=[]):
             i+=1
         df = pd.concat([df, dfn], axis=1, join_axes=[df.index])
     return df
-
+'''
 
 
 def try_to_impute(temp_df):
@@ -178,8 +152,8 @@ def plot_fitbit_sleep_data(sleep_df, cols):
         output_filename += "-" + col
     
     output_filename += ".png"
-	
     st.pyplot()
+
 def plot_fitbit_sleep_data_plotly(sleep_df, cols):
     X = [i for i in range(0,len(sleep_df.index.values))]
     fig = go.Figure()
@@ -190,6 +164,60 @@ def plot_fitbit_sleep_data_plotly(sleep_df, cols):
                         mode='lines+markers',
                         name='deep sleep'))
     st.write(fig)
+
+def animated_deep_sleep(sleep_df, cols):
+    progress_bar = st.sidebar.progress(0)
+    status_text = st.sidebar.empty()
+    last_rows = (0,0)#np.random.randn(1, 1)
+    chart = st.line_chart(last_rows)
+    X = [i for i in range(0,len(sleep_df.index.values))]
+    cnt = 0 
+    for i in sleep_df.index:
+        #new_rows_rem = pd.Series(sleep_df.loc[i,'rem.%'])
+        new_rows_deep = pd.Series(sleep_df.loc[i,'deep.%'])
+        try:
+            #chart.add_rows(new_rows_rem)
+            chart.add_rows(new_rows_deep)
+            status_text.text("%i%% Complete" % cnt)
+            
+            progress_bar.progress(X[cnt])
+            cnt+=1
+        except:
+            pass
+        time.sleep(0.01)
+    progress_bar.empty()
+
+    # Streamlit widgets automatically run the script from top to bottom. Since
+    # this button is not connected to any other logic, it just causes a plain
+    # rerun.
+    #st.button("Re-run") 
+    return None 
+
+def animated_rem_sleep(sleep_df, cols):
+    progress_bar = st.sidebar.progress(0)
+    status_text = st.sidebar.empty()
+    last_rows = (0,0)#np.random.randn(1, 1)
+    chart = st.line_chart(last_rows)
+    X = [i for i in range(0,len(sleep_df.index.values))]
+    cnt = 0 
+    for i in sleep_df.index:
+        new_rows_rem = pd.Series(sleep_df.loc[i,'rem.%'])
+        #new_rows_deep = pd.Series(sleep_df.loc[i,'rem.%'])
+        try:
+            chart.add_rows(new_rows_rem)
+            status_text.text("%i%% Complete" % cnt)
+            cnt+=1
+            progress_bar.progress(X[cnt])
+        except:
+            pass
+        time.sleep(0.01)
+    progress_bar.empty()
+
+    # Streamlit widgets automatically run the script from top to bottom. Since
+    # this button is not connected to any other logic, it just causes a plain
+    # rerun.
+    #st.button("Re-run")    
+    return None
 def plot_sleep_data_joint(full_sleep_df, col1, col2):
     sns.set(style='whitegrid', rc={"grid.linewidth": 0.1})
     sns.set_context("paper", font_scale=0.5)   
