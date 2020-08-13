@@ -6,10 +6,15 @@ Galileo was a pioneer in empericism via quantification. In this quantified self 
 This approach is distinct from standard medical science, as we make predictions about health by comparing current state to our own past, rather than comparing our state to the mean of population 
 [A similar project](https://pdfs.semanticscholar.org/8e32/64552e108d96e9b9fb95b9795bac989f5052.pdf).
 
-How to run: 
+# setup:
+```
+RUN pip install -r requirements.txt
+```
+# How to run: 
 ```
   python3 process-sleep-data.py; or
-  streamlit run app.py
+  streamlit run app.py or
+  ipython notebook IGalileo.ipynb
 ```
 
 
