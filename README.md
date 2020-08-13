@@ -4,6 +4,10 @@ The goal of the inner Galileo project is to quantify & visualize metrics related
 
 Galileo was a pioneer in empericism via quantification. In this quantified self project we want to get insights into our individual and personal functioning as distinct from what we can infer about health by comparing ourselves to the mean of population via standard medical science.
 
+How to install: 
+```
+ pip3 install -r requirements.txt 
+```
 How to run: 
 ```
   python3 process-sleep-data.py; or
