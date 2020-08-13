@@ -11,9 +11,13 @@ import plotly.graph_objects as go # or plotly.express as px
 DEBUG_WITHOUT_PLOTLY = False
 import sklearn   
 import plotting_functions as pf
+from utils import process_fitbit_sleep_data, process_fitbit_every_data
+
 import utils 
 CACHED = True
+BIG_DATA = False
 import os
+import glob
 # sense if running on heroku
 if 'DYNO' in os.environ:
     heroku = False
@@ -36,6 +40,10 @@ if __name__ == "__main__":
 
 
     if not DEBUG_WITHOUT_PLOTLY:
+        if BIG_DATA:
+            files = glob.glob('data/*.json')
+            big_feature = process_fitbit_every_data(files)
+
         #st.markdown('''
         ## Using cached data for splash screen
         #Data cleaning follows
@@ -49,11 +57,8 @@ if __name__ == "__main__":
         sleep_df.dropna(axis=0, how='any',inplace=True, thresh=10)
         sleep_df = sleep_df.apply(lambda x: x.fillna(sleep_df.mean()),axis=1)
         #sleep_df.dropna(axis=0,inplace=True)
-        pf.animated_deep_sleep(sleep_df, ['rem.%', 'deep.%'])
-        pf.animated_rem_sleep(sleep_df, ['rem.%', 'deep.%'])
         st.markdown('''---''')
         st.markdown('''\n\n''')
-        st.markdown('''The slow snooze movement''')
 
         '''
         clustergram useful for exploration
@@ -67,6 +72,8 @@ if __name__ == "__main__":
         st.markdown('''---''')
         st.markdown('''\n\n''')
 
+        pf.animated_deep_sleep(reduced_df, ['rem.%', 'deep.%'])
+        pf.animated_rem_sleep(reduced_df, ['rem.%', 'deep.%'])
         pf.plot_df_plotly(reduced_df)#,'rem.%','deep.%')
         #sleep_df = reduced_df 
         st.markdown('''---''')
