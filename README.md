@@ -8,7 +8,7 @@ This approach is distinct from standard medical science, as we make predictions 
 
 # setup:
 ```
-RUN pip install -r requirements.txt
+  pip install -r requirements.txt
 ```
 # How to run: 
 ```
@@ -20,10 +20,10 @@ RUN pip install -r requirements.txt
 
 To get more data linux:
 ``` 
-wget https://www.dropbox.com/sh/0nz5l0zwcuu7ojf/AADvG7nkUBmT93vrOVnQfj9Ua?dl=0
+  wget https://www.dropbox.com/sh/0nz5l0zwcuu7ojf/AADvG7nkUBmT93vrOVnQfj9Ua?dl=0
 ```
 To get more data on OSX:
 ```
-curl -s -L https://www.dropbox.com/sh/0nz5l0zwcuu7ojf/AADvG7nkUBmT93vrOVnQfj9Ua?dl=0
+  curl -s -L https://www.dropbox.com/sh/0nz5l0zwcuu7ojf/AADvG7nkUBmT93vrOVnQfj9Ua?dl=0
 ```
 
