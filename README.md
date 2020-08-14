@@ -1,4 +1,5 @@
 # innerGalileo
+![](https://travis-ci.org/fun-zoological-computing/innerGalileo.svg?branch=master)
 
 [![Build Status](https://travis-ci.org/fun-zoological-computing/innerGalileo.svg?branch=master)](https://travis-ci.org/fun-zoological-computing/innerGalileo)
 
@@ -8,19 +9,24 @@ Galileo was a pioneer in empericism via quantification. In this quantified self 
 This approach is distinct from standard medical science, as we make predictions about health by comparing current state to our own past, rather than comparing our state to the mean of population 
 [A similar project](https://pdfs.semanticscholar.org/8e32/64552e108d96e9b9fb95b9795bac989f5052.pdf).
 
-How to run: 
+# setup:
+```
+  pip install -r requirements.txt
+```
+# How to run: 
 ```
   python3 process-sleep-data.py; or
-  streamlit run app.py
+  streamlit run app.py or
+  ipython notebook IGalileo.ipynb
 ```
 
 
 To get more data linux:
 ``` 
-wget https://www.dropbox.com/sh/0nz5l0zwcuu7ojf/AADvG7nkUBmT93vrOVnQfj9Ua?dl=0
+  wget https://www.dropbox.com/sh/0nz5l0zwcuu7ojf/AADvG7nkUBmT93vrOVnQfj9Ua?dl=0
 ```
 To get more data on OSX:
 ```
-curl -s -L https://www.dropbox.com/sh/0nz5l0zwcuu7ojf/AADvG7nkUBmT93vrOVnQfj9Ua?dl=0
+  curl -s -L https://www.dropbox.com/sh/0nz5l0zwcuu7ojf/AADvG7nkUBmT93vrOVnQfj9Ua?dl=0
 ```
 
