@@ -30,12 +30,12 @@ def process_fitbit_sleep_data(fileList):
 
     for input_file in fileList:
         input_df = pd.read_json(input_file)
-		try:
+	try:
             detail_df = pd.json_normalize(input_df['levels'])
-		except:
-	        detail_df = json_normalize(input_df['levels'])
+	except:
+	    detail_df = json_normalize(input_df['levels'])
         
-		sleep_df = pd.concat([input_df, detail_df], axis =1)
+	sleep_df = pd.concat([input_df, detail_df], axis =1)
         full_sleep_df = pd.concat([full_sleep_df, sleep_df], sort=True)
 
     full_sleep_df['dateOfSleep']= pd.to_datetime(full_sleep_df['dateOfSleep'])
