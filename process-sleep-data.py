@@ -16,7 +16,7 @@ import altair as alt
 try: 
     json_normalize = pd.json_normalize
 except:
-	print('wrong version os pandas'
+    print('wrong version os pandas')
     from pandas.io.json import json_normalize
     
 # Function: process_fitbit_sleep_data()
