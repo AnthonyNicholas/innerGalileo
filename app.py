@@ -11,11 +11,10 @@ import plotly.graph_objects as go # or plotly.express as px
 DEBUG_WITHOUT_PLOTLY = False
 import sklearn   
 import plotting_functions as pf
-from utils import process_fitbit_sleep_data, process_fitbit_every_data
-
+from utils import process_fitbit_sleep_data, process_fitbit_other_data, visit_files
 import utils 
 CACHED = True
-BIG_DATA = False
+BIG_DATA = True
 import os
 import glob
 # sense if running on heroku
@@ -42,8 +41,9 @@ if __name__ == "__main__":
     if not DEBUG_WITHOUT_PLOTLY:
         if BIG_DATA:
             files = glob.glob('data/*.json')
-            big_feature = process_fitbit_every_data(files)
-
+            list_of_lists = visit_files(files)
+            big_feature = process_fitbit_other_data(list_of_lists)
+            st.text(big_feature.keys())
         #st.markdown('''
         ## Using cached data for splash screen
         #Data cleaning follows
@@ -72,8 +72,8 @@ if __name__ == "__main__":
         st.markdown('''---''')
         st.markdown('''\n\n''')
 
-        pf.animated_deep_sleep(reduced_df, ['rem.%', 'deep.%'])
-        pf.animated_rem_sleep(reduced_df, ['rem.%', 'deep.%'])
+        #pf.animated_deep_sleep(reduced_df, ['rem.%', 'deep.%'])
+        #pf.animated_rem_sleep(reduced_df, ['rem.%', 'deep.%'])
         pf.plot_df_plotly(reduced_df)#,'rem.%','deep.%')
         #sleep_df = reduced_df 
         st.markdown('''---''')

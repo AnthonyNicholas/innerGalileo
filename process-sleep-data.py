@@ -15,7 +15,7 @@ import altair as alt
 try:
     json_normalize = pd.json_normalize
 except:
-    print('wrong version os pandas')
+    print('accomodating for different version os pandas')
     from pandas.io.json import json_normalize
     
 # Function: process_fitbit_sleep_data()
@@ -29,13 +29,10 @@ def process_fitbit_sleep_data(fileList):
 
     for input_file in fileList:
         input_df = pd.read_json(input_file)
-        try:
-            detail_df = pd.json_normalize(input_df['levels'])
-        except:
-	        detail_df = json_normalize(input_df['levels'])
-        
+        detail_df = json_normalize(input_df['levels'])            
         sleep_df = pd.concat([input_df, detail_df], axis =1)
-        full_sleep_df = pd.concat([full_sleep_df, sleep_df], sort=True)
+        
+    full_sleep_df = pd.concat([full_sleep_df, sleep_df], sort=True)
 
     full_sleep_df['dateOfSleep']= pd.to_datetime(full_sleep_df['dateOfSleep'])
     full_sleep_df['dayOfWeek'] = full_sleep_df['dateOfSleep'].dt.day_name()
@@ -180,7 +177,7 @@ def plot_corr(sleep_df):
     plt.close()	
 
 if __name__ == "__main__":  
-    # st.title('fitbit analysis for sleep')
+    st.title('fitbit analysis for sleep')
     fileList = ["sleep-2020-03-09.json","sleep-2020-04-08.json","sleep-2020-05-08.json","sleep-2020-06-07.json","sleep-2020-07-07.json", "sleep-2020-08-06.json"]
     sleep_df = process_fitbit_sleep_data(fileList)
     
