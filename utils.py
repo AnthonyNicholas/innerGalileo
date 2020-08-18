@@ -102,26 +102,20 @@ def process_fitbit_other_data(list_of_lists):
     '''
     visit files from subcategories build large frames via concatonation.
     '''
-
+    dict_of_frames = {}
     list_of_frames = []
     for list_of_files in list_of_lists:
-        df = None
-        cnt = 0
         for input_file in list_of_files:
             input_df = pd.read_json(input_file)
-            if cnt>0:
-                df = pd.concat([df, input_df], axis =1)
-            else:
-                df = input_df
-            input_df = pd.read_json(input_file)
-            if cnt>0:
-                df = pd.concat([df, input_df], axis =1)
-            else:
-                df = input_df
-            cnt+=1
-    
+            dict_of_frames[input_file] = input_df
+    return dict_of_frames
+
+            #if cnt>0:
+            #    df = pd.concat([df, input_df], axis =1)
+            #else:
+            #    df = input_df
+            #cnt+=1
         #st.write(reduced_df.describe())
         #progress_bar.progress(cnt/len(list_of_lists)*)
         #status_text.text("Data Reading %i%% Complete" % float(cnt/len(list_of_lists)))    
-        list_of_frames.append(df)
-    return list_of_frames
+        
