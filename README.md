@@ -1,5 +1,5 @@
 # innerGalileo
-![](https://travis-ci.org/fun-zoological-computing/innerGalileo.svg?branch=master)
+[![Build Status](https://travis-ci.org/fun-zoological-computing/innerGalileo.svg?branch=master)](https://travis-ci.org/fun-zoological-computing/innerGalileo)
 
 [![Build Status](https://travis-ci.org/fun-zoological-computing/innerGalileo.svg?branch=master)](https://travis-ci.org/fun-zoological-computing/innerGalileo)
 

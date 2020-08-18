@@ -82,20 +82,46 @@ def dask_map_function(eval_,invalid_ind):
     fitnesses = dask.compute(*results)
     return fitnesses
 '''
-def process_fitbit_every_data(fileList):
-    df = None
-    cnt = 0
+def visit_files(fileList):
+    '''
+    filter files into useful sub categories
+    '''
+    resting_heart_rate = []
+    moderately_active = []
+    very_active_minutes = []
     for input_file in tqdm(fileList,title='Loading in massive everything data set'):
-        input_df = pd.read_json(input_file)
+        if "resting_heart_rate" in input_file:
+            resting_heart_rate.append(input_file)
+        if "moderately_active_minutes" in input_file:
+            moderately_active.append(input_file)
+        if "very_active_minutes" in input_file:
+            very_active_minutes.append(input_file)
+    return (very_active_minutes,moderately_active,resting_heart_rate)
 
-        if cnt>0:
-            df = pd.concat([df, input_df], axis =1)
-        else:
-            df = input_df
-        
+def process_fitbit_other_data(list_of_lists):
+    '''
+    visit files from subcategories build large frames via concatonation.
+    '''
+
+    list_of_frames = []
+    for list_of_files in list_of_lists:
+        df = None
+        cnt = 0
+        for input_file in list_of_files:
+            input_df = pd.read_json(input_file)
+            if cnt>0:
+                df = pd.concat([df, input_df], axis =1)
+            else:
+                df = input_df
+            input_df = pd.read_json(input_file)
+            if cnt>0:
+                df = pd.concat([df, input_df], axis =1)
+            else:
+                df = input_df
+            cnt+=1
+    
         #st.write(reduced_df.describe())
-        progress_bar.progress(cnt/len(fileList))
-        status_text.text("Data Reading %i%% Complete" % float(cnt/len(fileList)))    
-        cnt+=1
-    #st.write(df.describe())
-    return df
+        #progress_bar.progress(cnt/len(list_of_lists)*)
+        #status_text.text("Data Reading %i%% Complete" % float(cnt/len(list_of_lists)))    
+        list_of_frames.append(df)
+    return list_of_frames

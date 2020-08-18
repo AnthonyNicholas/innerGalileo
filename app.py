@@ -15,7 +15,7 @@ from utils import process_fitbit_sleep_data, process_fitbit_every_data
 
 import utils 
 CACHED = True
-BIG_DATA = False
+BIG_DATA = True
 import os
 import glob
 # sense if running on heroku
@@ -72,8 +72,8 @@ if __name__ == "__main__":
         st.markdown('''---''')
         st.markdown('''\n\n''')
 
-        pf.animated_deep_sleep(reduced_df, ['rem.%', 'deep.%'])
-        pf.animated_rem_sleep(reduced_df, ['rem.%', 'deep.%'])
+        #pf.animated_deep_sleep(reduced_df, ['rem.%', 'deep.%'])
+        #pf.animated_rem_sleep(reduced_df, ['rem.%', 'deep.%'])
         pf.plot_df_plotly(reduced_df)#,'rem.%','deep.%')
         #sleep_df = reduced_df 
         st.markdown('''---''')
