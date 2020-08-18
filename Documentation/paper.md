@@ -1,5 +1,5 @@
 title: 'A Tool for person specific tool for the Assesment of and Intervention in Sleep Quality'
-
+[JOSS](https://joss.theoj.org/) 2 page manuscript, otherwise code quality.
 tags:
   - Dashboard
   - Quantified Self
