@@ -106,7 +106,6 @@ def process_fitbit_other_data(list_of_lists):
     list_of_frames = []
     for list_of_files in list_of_lists:
         for input_file in list_of_files:
-            #print(input_file)
             input_df = pd.read_json(input_file)
             dict_of_frames[input_file] = input_df
     return dict_of_frames
