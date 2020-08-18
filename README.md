@@ -1,5 +1,6 @@
 # innerGalileo
-![](https://travis-ci.org/fun-zoological-computing/innerGalileo.svg?branch=master)
+[![Build Status](https://travis-ci.org/fun-zoological-computing/innerGalileo.svg?branch=master)](https://travis-ci.org/fun-zoological-computing/innerGalileo)
+
 
 The goal of the inner Galileo project is to quantify & visualize metrics related to personal health - sleep, fitness etc. 
 
@@ -13,8 +14,14 @@ This approach is distinct from standard medical science, as we make predictions 
 ```
 # How to run: 
 ```
-  python3 process-sleep-data.py; or
-  streamlit run app.py or
+  python3 process-sleep-data.py; 
+```  
+  or
+```
+  streamlit run app.py 
+```
+  or
+```  
   ipython notebook IGalileo.ipynb
 ```
 

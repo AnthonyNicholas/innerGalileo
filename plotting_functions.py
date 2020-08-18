@@ -23,7 +23,6 @@ except:
     raise(Exception('need to install plotly'))
 from tqdm.auto import tqdm
 import seaborn as sns    
-from statsmodels.tsa.stattools import grangercausalitytests
 
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer
