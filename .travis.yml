@@ -23,4 +23,3 @@ install:
 ######################################################
 
 script: python3 process-sleep-data.py
-script: python3 app.py
