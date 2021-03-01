@@ -286,6 +286,12 @@ def df_to_plotly(df,log=False):
     return {'z': df.values.tolist(),
             'x': df.columns.tolist(),
             'y': df.index.tolist()}
+
+
+def plot_df_plotly(sleep_df):
+    fig = go.Figure(data=go.Heatmap(df_to_plotly(sleep_df,log=True)))
+    st.write(fig)
+
 def plot_imshow_plotly(sleep_df):
 
     heat = go.Heatmap(df_to_plotly(sleep_df),colorscale=sns_colorscale)
@@ -301,10 +307,6 @@ def plot_imshow_plotly(sleep_df):
     
     fig=go.Figure(data=[heat], layout=layout)      
 
-    st.write(fig)
-
-def plot_df_plotly(sleep_df):
-    fig = go.Figure(data=go.Heatmap(df_to_plotly(sleep_df,log=True)))
     st.write(fig)
 
 

@@ -28,6 +28,7 @@ if __name__ == "__main__":
     st.title('The Quantified Sleep')
 
     API_TOKEN = st.text_input('Please Enter Your Fitbit API token:')
+    st.text("API TOKEN is", API_TOKEN)
     URL = "https://api.fitbit.com/1.2/user/~/sleep/date/2020-08-18.json"
     responses = requests.request("GET",url,data=payload,headers=headers)
     radio_value = st.sidebar.radio("\
